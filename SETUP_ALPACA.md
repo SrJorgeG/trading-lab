@@ -13,15 +13,21 @@ Tiempo: unos 15 minutos. Todo esto lo haces **tú** (crear cuentas y manejar cla
 3. Verifica el email (te llega un enlace).
 4. Para **paper** no hace falta verificar identidad ni meter dinero. Si en algún momento te pide DNI, datos bancarios o fondear la cuenta, **para**: eso es para la cuenta real y no la necesitamos.
 
-> Nota: Alpaca es un broker de EE. UU. La cuenta paper suele estar disponible para residentes fuera de EE. UU. Si al registrarte desde España te bloquea algo (sobre todo con cripto), apúntalo y avísame; hay alternativas (por ejemplo, la testnet de Binance o Bybit para cripto).
+> Nota: Alpaca es un broker de EE. UU. La cuenta **paper** está disponible para cualquiera con un email, y la documentación oficial dice que el paper también simula cripto. Mañana haz una prueba de humo (una orden paper minúscula de `BTC/USD`, o lista `GET /v2/assets?asset_class=crypto`). El cripto **live** para un residente en España **no está confirmado** (solo «select international jurisdictions»). Alpaca Europe (CNMV) no ofrece cripto. Si el paper rechaza cripto, el plan B es la cuenta demo de Bybit EU o el Spot Testnet de Binance. Detalle y fuentes: `docs/VERIFICACIONES.md`.
 
 ## 2. (Recomendado) Poner un saldo paper realista
 
-La cuenta paper empieza con unos 100.000 $ ficticios. Con eso todo parece fácil. Para que el experimento se parezca a vuestra realidad:
+La cuenta paper inicial se crea con **100.000 $** ficticios (oficial). Con eso todo parece fácil. Para que el experimento se parezca a vuestra realidad, lo suyo es un capital de **10.000 $**.
 
-1. En el panel (<https://app.alpaca.markets>), arriba a la izquierda, asegúrate de estar en la cuenta **Paper** (no "Live").
-2. Busca la opción de **reiniciar la cuenta paper** (Reset / "Reset Account") y pon un saldo de **10.000 $**. Si no te deja elegir saldo, déjalo en 100.000 $ y nuestro código usará un capital "virtual" de 10.000 $ (está previsto en `config/settings.toml`).
-3. **Importante:** si reinicias la cuenta paper, después tienes que **volver a generar las claves** (las anteriores dejan de valer).
+Alpaca **ya no tiene botón de Reset**. En el panel actual se crean y se borran cuentas paper:
+
+1. En el panel (<https://app.alpaca.markets>), arriba a la izquierda, pulsa el número de la cuenta **Paper** (no "Live") y elige **Open New Paper Account**.
+2. Ponle un nombre (p. ej. `trading-lab-10k`) y un capital inicial de **10.000 $**.
+3. Selecciona esa cuenta nueva en el desplegable y **genera claves API nuevas** (las de la cuenta anterior no sirven).
+4. Si quieres, borra la cuenta de 100.000 $ en Account Settings → Delete Account. Puedes tener varias cuentas paper a la vez (en la práctica, hasta 3).
+5. El saldo **no se puede cambiar** después de crear la cuenta: si más adelante quieres otro capital, creas otra cuenta paper.
+
+Si prefieres dejar la de 100.000 $, nuestro código usará un capital "virtual" de 10.000 $ (está previsto en `config/settings.toml`). Detalle y fuentes: `docs/VERIFICACIONES.md`.
 
 ## 3. Sacar las claves API de paper
 
@@ -65,7 +71,7 @@ print("Estado:", a.status, "| Equity:", a.equity, "| Moneda:", a.currency)
 PY
 ```
 
-Debe imprimir `ACTIVE` y el saldo paper. Si da error 401/403: claves mal copiadas o generadas antes de un reset.
+Debe imprimir `ACTIVE` y el saldo paper. Si da error 401/403: claves mal copiadas, o generadas para otra cuenta paper (tras crear o borrar una hay que usar las claves nuevas).
 
 ## 6. Conectar Alpaca a Claude Code (servidor MCP oficial)
 

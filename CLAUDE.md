@@ -70,7 +70,7 @@ trading-lab/
 ## Convenciones
 - **Sin look-ahead** (usar sin querer datos del futuro): una señal calculada con la vela cerrada en `t` solo puede ejecutarse en `t+1` (apertura de la siguiente vela). Los indicadores solo usan datos `≤ t`. Nada de `shift(-1)`, `center=True` ni normalizar con estadísticas de todo el periodo.
 - Las estrategias son **funciones puras**: `generate_signals(bars: pd.DataFrame, params: dict) -> pd.DataFrame` con columnas `entry`, `exit`, `stop_price` (y opcional `rank`). Sin E/S, sin red, sin aleatoriedad.
-- **Tiempo:** todo se guarda en **UTC** (`DatetimeIndex` con tz). Se muestra en hora de Madrid en informes y diario. Las sesiones de EE. UU. se calculan con el calendario de Alpaca (`get_calendar`/`get_clock`), no a mano.
+- **Tiempo:** todo se guarda en **UTC** (`DatetimeIndex` con tz). Se muestra en hora de Madrid en informes y diario. Las sesiones de EE. UU. se calculan con el calendario de Alpaca (`get_calendar`/`get_clock`), no a mano. Las velas diarias de **acciones** de Alpaca cortan a medianoche de Nueva York; las de **cripto** (`timeframe=1Day` del API v1beta3) cortan a las **00:00 UTC**. No uses medianoche ET para cripto (hay ejemplos viejos en la doc que aún muestran 05:00 UTC). Ver `docs/VERIFICACIONES.md`.
 - **Datos de acciones:** precios **ajustados** por splits y dividendos (`adjustment="all"`). Preferir **ETFs** para evitar el sesgo de supervivencia (usar solo empresas que existen hoy).
 - **Costes siempre activados** en cualquier backtest que se reporte: comisión + slippage (diferencia entre el precio esperado y el que te dan de verdad) + spread. Valores en `config/settings.toml`.
 - Configuración en TOML; nada de números mágicos en el código.

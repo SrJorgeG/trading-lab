@@ -2,7 +2,7 @@
 
 Kit listo para usar en **jorge-cachy** con Claude Code. Objetivo de la semana:
 
-1. **Fable** (el modelo más listo, gratis en tu plan Pro hasta el **lun 17 nov 08:59, hora de Madrid**) investiga, propone y **valida con backtest** 1–2 estrategias **basadas en reglas escritas**.
+1. **Fable** (el modelo más listo, incluido en tu plan Pro hasta el **lun 17 nov 08:59, hora de Madrid**, con un tope del 50 % del límite semanal; hace falta Claude Code **v2.1.321+**) investiga, propone y **valida con backtest** 1–2 estrategias **basadas en reglas escritas**.
 2. Las deja documentadas en un `STRATEGY.md` tan claro que luego las pueda ejecutar **Sonnet o un script de Python sin IA**.
 3. Se ejecutan a diario en **paper trading** (dinero ficticio) en **Alpaca**. **Cero dinero real.**
 
@@ -23,7 +23,9 @@ Kit listo para usar en **jorge-cachy** con Claude Code. Objetivo de la semana:
 | `prompts/04_fable_manual_operacion.md` | Escribir `STRATEGY.md` (el manual) y la especificación de `signals.py` | **Fable** |
 | `prompts/05_sonnet_paper_diario.md` | Programar el ejecutor diario en paper + cron/systemd | **Sonnet** |
 | `prompts/06_revision_semanal.md` | Revisión semanal contra el benchmark | **Sonnet** (Fable si queda cupo) |
-| `docs/estrategias.md` | Hueco para pegar el informe de 15–20 estrategias | Tú lo pegas |
+| `docs/estrategias.md` | Informe de 15–20 estrategias (ya en el repo) | Fable (paso 1) |
+| `docs/research-mercado-nov-2026.md` | Research de mercado, Jiang, Fang y Trump | Contexto |
+| `docs/VERIFICACIONES.md` | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) | Tú / Claude |
 | `plantillas/.env.example`, `plantillas/.gitignore` | Para copiar al repo | Tú |
 
 ---
@@ -93,7 +95,7 @@ Datos de tu cuenta (según lo que pasó el Bot general): el límite semanal de C
 - Domingo 16: una última sesión de **Fable** para revisar el manual y el ejecutor ("busca agujeros"). Después del lunes 08:59 Fable vuelve a ir por créditos de pago.
 
 ### Tanda 3 — opcional, solo si tienes el reset extra de Fable
-El Bot general creía que **no** tienes el reset gratis (te suscribiste después del 9 nov). **Míralo en la app de Claude** antes de contar con ello. Si lo tienes, úsalo **antes del lunes 08:59** para:
+Oficialmente, el reset de Fable en Pro solo se da si la facturación de pago estaba activa **antes del 9 nov 2026 a las 18:00, hora de Madrid** (10:00 PT), y caduca el **lun 17 nov 08:59, hora de Madrid**. El Bot general creía que **no** lo tienes (te suscribiste después de ese corte). **Míralo en Settings → Usage** antes de contar con ello. Si lo tienes, úsalo **antes del lunes 08:59** para:
 - una segunda ronda del paso 1 → 3 con las ideas que fallaron (nuevas hipótesis, no retocar las mismas hasta que "salgan"), o
 - una auditoría profunda del código (look-ahead, costes, errores de órdenes).
 
@@ -113,7 +115,7 @@ El Bot general creía que **no** tienes el reset gratis (te suscribiste después
 | Ejecutar la estrategia cada día | **Python puro** (sin IA) | Determinista, gratis, sin "creatividad" |
 | Revisión semanal | **Sonnet** | Leer números y compararlos |
 
-Cambiar de modelo dentro de Claude Code: `/model` y eliges. Desde la terminal: `claude --model fable` o `claude --model sonnet` (son alias oficiales). Comprueba con `/status` qué modelo está activo antes de empezar.
+Cambiar de modelo dentro de Claude Code: `/model` y eliges. Desde la terminal: `claude --model fable` o `claude --model sonnet` (son alias oficiales; `fable` resuelve a Fable 5.2). Hace falta Claude Code **v2.1.321 o posterior** para Fable 5.2 (`claude update` si no). Comprueba con `/status` qué modelo está activo antes de empezar. Detalle de la oferta Pro: `docs/VERIFICACIONES.md`.
 
 > **Ojo:** `/model` guarda el modelo elegido como **predeterminado para las sesiones nuevas**. Si te quedas en Fable, el siguiente `claude` (o un `claude -p` del cron) también usará Fable. Por eso todos los comandos automáticos de este kit llevan `--model sonnet` explícito, y conviene volver a `/model` → Sonnet al terminar cada sesión de Fable.
 
