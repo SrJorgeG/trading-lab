@@ -36,12 +36,17 @@ def has_keys() -> bool:
     return bool(os.getenv("ALPACA_API_KEY")) and bool(os.getenv("ALPACA_SECRET_KEY"))
 
 
+_ADJUSTMENTS = ("all", "split", "raw", "dividend")
+
+
 class AlpacaSource:
     name = "alpaca"
-    adjustment = "all"
 
-    def __init__(self, feed: str = "sip") -> None:
+    def __init__(self, feed: str = "sip", adjustment: str = "all") -> None:
+        if adjustment not in _ADJUSTMENTS:
+            raise ValueError(f"ajuste Alpaca no soportado: {adjustment!r}")
         self.feed = feed
+        self.adjustment = adjustment
         self.limiter = RateLimiter(200)
         self._stock = None
         self._crypto = None
@@ -84,7 +89,7 @@ class AlpacaSource:
                 timeframe=TimeFrame.Day,
                 start=start.to_pydatetime(),
                 end=end.to_pydatetime(),
-                adjustment=Adjustment.ALL,
+                adjustment=Adjustment(self.adjustment),
                 feed=feed,
             )
             try:

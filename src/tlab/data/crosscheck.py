@@ -135,3 +135,48 @@ def results_table(results: list[CheckResult]) -> str:
             f"{d['share_within_tol'] * 100:.1f} % | **{d['verdict']}** | {d['reasons']} |"
         )
     return "\n".join(lines)
+
+
+def _as_utc_midnight(idx: pd.DatetimeIndex) -> pd.DatetimeIndex:
+    """Fecha de sesión a medianoche UTC (igual que las velas de equity del loader)."""
+    idx = pd.DatetimeIndex(idx)
+    if len(idx) == 0:
+        return pd.DatetimeIndex([], tz="UTC")
+    if idx.tz is None:
+        return idx.normalize().tz_localize("UTC")
+    return idx.tz_convert("America/New_York").normalize().tz_localize(None).tz_localize("UTC")
+
+
+def attach_dividends(det: pd.DataFrame, dividends: pd.Series) -> pd.DataFrame:
+    """Añade `div_amount`, `is_exdiv` y `abs_diff_bp` al detalle diario de compare_returns."""
+    out = det.copy()
+    if "abs_diff" in out.columns and "abs_diff_bp" not in out.columns:
+        out["abs_diff_bp"] = out["abs_diff"] * 1e4
+    if dividends is None or len(dividends) == 0:
+        out["div_amount"] = float("nan")
+        out["is_exdiv"] = False
+        return out
+    div = dividends.copy()
+    div.index = _as_utc_midnight(pd.DatetimeIndex(div.index))
+    div = div[~div.index.duplicated(keep="last")]
+    aligned = div.reindex(out.index)
+    out["div_amount"] = aligned.astype(float)
+    out["is_exdiv"] = out["div_amount"].notna() & (out["div_amount"] != 0)
+    return out
+
+
+def exdiv_overlap_stats(det: pd.DataFrame, tol: float = 0.001) -> dict:
+    """Cruza días fuera de tolerancia con fechas ex-dividendo (`is_exdiv` de attach_dividends)."""
+    if "is_exdiv" not in det.columns or "abs_diff" not in det.columns:
+        raise ValueError("hace falta el detalle de compare_returns tras attach_dividends")
+    over = det["abs_diff"] > tol
+    n_over = int(over.sum())
+    n_ex = int(det["is_exdiv"].sum())
+    n_both = int((over & det["is_exdiv"]).sum())
+    return {
+        "n_over": n_over,
+        "n_exdiv": n_ex,
+        "n_over_and_exdiv": n_both,
+        "share_over_that_are_exdiv": (n_both / n_over) if n_over else float("nan"),
+        "share_exdiv_that_are_over": (n_both / n_ex) if n_ex else float("nan"),
+    }
