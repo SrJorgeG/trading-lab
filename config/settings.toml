@@ -1,0 +1,36 @@
+# Configuración general. Valores por defecto de prompts/02 (Fable puede cambiarlos en el paso 1).
+
+[capital]
+virtual_equity_usd = 10000      # capital con el que razonamos aunque la cuenta paper tenga más
+
+[risk]
+risk_per_trade = 0.01
+max_positions = 3
+max_gross_exposure = 1.0        # sin apalancamiento
+kill_switch_drawdown = 0.10
+
+[costs.equity]
+commission_per_share = 0.0
+slippage_bps = 5                # por lado; ETFs muy líquidos
+
+[costs.crypto]
+fee_rate = 0.0025               # taker tramo 1 de Alpaca, por lado
+slippage_bps = 10
+
+[costs.stress]
+multiplier = 2.0
+
+[data]
+equity_start = "2016-01-01"     # inicio con Alpaca (plan Basic)
+history_start = "2003-01-01"    # inicio con yfinance (respaldo, más historia)
+cache_dir = "data_cache"
+source = "auto"                 # auto = Alpaca si hay claves en .env; si no, yfinance
+
+[validation]
+is_fraction = 0.70              # provisional hasta que docs/hipotesis.md fije fechas
+wf_windows = 5
+
+[universe]
+equity = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "GLD", "BIL", "SHY",
+          "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"]
+crypto = ["BTC/USD", "ETH/USD"]
