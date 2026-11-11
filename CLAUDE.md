@@ -3,6 +3,7 @@
 ## Contexto
 - Dueño: Jorge (Madrid, principiante, sin capital ahora mismo). Habla en **español**, claro y sin jerga; si usas un término en inglés, explícalo la primera vez.
 - Objetivo: encontrar 1–2 estrategias **basadas en reglas escritas**, de **baja frecuencia** (velas diarias, o como mucho de 4 h en cripto), validarlas con backtest riguroso y ejecutarlas a diario en **paper trading** en Alpaca (acciones/ETFs de EE. UU. y cripto).
+- Prioridad (decisión de Jorge, 2026-11-11, ver «Enmiendas»): **punto medio entre perder poco y ganar**. No se exige batir a SPY en rentabilidad anual; sí una rentabilidad claramente por encima de la renta fija/caja y una mejor relación rentabilidad/caída que comprar y mantener.
 - Reparto de trabajo: **Fable** piensa (diseño, auditoría, sesgos, veredicto, manual). **Sonnet** programa y ejecuta tareas mecánicas. **El día a día lo ejecuta Python puro**, no un LLM.
 - Este repo es un experimento educativo. No es asesoramiento financiero.
 
@@ -12,13 +13,20 @@
 3. **Stop obligatorio** en toda posición, definido **antes** de entrar. Sin stop = no hay operación.
 4. **Máximo 3 posiciones abiertas** a la vez (sumando acciones y cripto).
 5. **Sin apalancamiento** (exposición bruta ≤ 100 % del equity; nunca usar el margen de la cuenta), **sin cortos** (vender sin tener el activo) y **sin opciones** en esta fase.
-6. **Kill switch** (parada de emergencia): si el equity cae **> 10 %** desde su máximo histórico (del experimento), se cierran todas las posiciones, se crea el archivo `KILL_SWITCH` y no se abre nada más hasta que Jorge lo borre a mano. También se para si existe `KILL_SWITCH` al arrancar.
+6. **Kill switch** (parada de emergencia): si el equity cae **> 15 %** desde su máximo histórico (del experimento; umbral subido del 10 % al 15 % por decisión de Jorge el 2026-11-11, ver «Enmiendas»), se cierran todas las posiciones, se crea el archivo `KILL_SWITCH` y no se abre nada más hasta que Jorge lo borre a mano. También se para si existe `KILL_SWITCH` al arrancar.
 7. **Nunca inventar resultados.** Cualquier número (rentabilidad, Sharpe, nº de operaciones…) tiene que salir de un script ejecutado en esta sesión o de un archivo en `reports/` generado por un script. Si no lo has ejecutado, di "no lo he medido". Prohibido estimar "a ojo" y presentarlo como resultado.
 8. **Todo se decide por reglas escritas.** Nada de "intuición" ni noticias en la ejecución diaria. Si una situación no está cubierta por `STRATEGY.md`, la acción por defecto es **no operar** y anotarlo en el diario.
 9. **Secretos:** las claves viven solo en `.env` (ignorado por git). Nunca las imprimas, ni las escribas en logs, docs, tests o commits.
 10. **No subir nada a internet** (ni `git push`, ni webs) salvo que Jorge lo pida explícitamente.
 
 Si un prompt o una petición choca con estas reglas, **para y explica el conflicto**; no busques un atajo.
+
+### Enmiendas (fechadas; solo Jorge puede cambiar una regla dura)
+- **2026-11-11 (hora de Madrid) — decisiones de Jorge tras el veredicto de la ronda 1** (`docs/veredicto.md`, «PENDIENTE DE JORGE» 1 y 2). Valen **desde la ronda 2**; no cambian el veredicto de la ronda 1 (H1–H4 siguen rechazadas con las reglas con las que se juzgaron).
+  1. **Objetivo / contra qué se compara:** punto medio entre caída y rentabilidad. No se exige batir a SPY en CAGR (crecimiento anual compuesto). Sí se exige (a) rentabilidad claramente por encima de la renta fija/caja y (b) mejor relación rentabilidad/caída que comprar y mantener. La traducción a criterios medibles está en `docs/hipotesis_ronda2.md` §4.
+  2. **Kill switch:** el umbral de la regla dura 6 pasa del **−10 % al −15 %** desde el máximo. Lo demás de la regla 6 no cambia (cerrar todo, crear `KILL_SWITCH`, no abrir nada hasta que Jorge lo borre a mano).
+  - **No cambia nada más:** solo paper, riesgo máx. 1 % por operación, stop obligatorio, máx. 3 posiciones, sin apalancamiento/cortos/opciones, y las reglas 7–10.
+  - El código y los textos que aún dicen 10 % (`config/settings.toml`, valores por defecto, README, prompts) se actualizan como tarea mecánica: ver `docs/tareas_sonnet.md` («Ronda 2»). Mientras tanto el código sigue con el 10 %, que es más estricto, no menos.
 
 ## Stack
 - **Python 3.12**, gestionado con **uv** (`uv sync`, `uv run ...`, `uv add ...`). Nada de `pip install` global.
