@@ -11,7 +11,7 @@ is_end = "2020-12-31"
 end = "2026-10-31"
 data_source = "yfinance"      # historia larga (§0): Alpaca solo sirve para contrastar
 min_history_bars = 365          # cada activo entra al universo cuando tiene >= 365 velas
-risk_per_trade = 0.01           # se calibra en IS (1,0 / 0,75 / 0,5 %) y se congela (P1)
+risk_per_trade = 0.005          # CONGELADO: calibrado en IS (P1), reports/rsi2_etf/is_20261111-1613
 risk_levels = [0.01, 0.0075, 0.005]
 kill_switch_in_backtest = false # P1: métricas sin kill switch; se cuentan los episodios aparte
 subperiods = [["2007-07-01", "2013-12-31"], ["2014-01-01", "2020-06-30"], ["2020-07-01", "2026-10-31"]]

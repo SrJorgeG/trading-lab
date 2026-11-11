@@ -20,9 +20,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--params", default=None, help="TOML con [params] que sobrescriben")
     ap.add_argument("--confirm-oos", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--entry-delay", type=int, default=0, help="velas extra de retraso (estrés)")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
-    p = run_backtest(a.strategy, a.mode, a.costs, a.params, a.confirm_oos, a.force)
+    p = run_backtest(
+        a.strategy, a.mode, a.costs, a.params, a.confirm_oos, a.force, entry_delay=a.entry_delay
+    )
     print(f"Informe: {p}")
     return 0
 

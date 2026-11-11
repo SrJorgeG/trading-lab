@@ -408,6 +408,22 @@ def test_runner_candidate_is_wf_robust(tmp_path, settings):
     assert reg.count("|") < (tmp_path / "reg.md").read_text().count("|")
 
 
+def test_runner_entry_delay_option(tmp_path, settings):
+    from tlab.backtest.runner import run_backtest
+
+    data, sc = _synthetic_candidate()
+    kw = dict(data=data, reports_dir=tmp_path / "reports", registry=tmp_path / "reg.md",
+              settings=settings, strat_cfg=sc)  # fmt: skip
+    base = run_backtest("donchian_etf", "is", **kw)
+    late = run_backtest("donchian_etf", "is", entry_delay=1, **kw)
+    assert "_delay1_" in late.parent.name and late.parent != base.parent
+    assert "retraso 1 vela" in (tmp_path / "reg.md").read_text()
+    t0 = pd.read_csv(base.parent / "trades.csv")
+    t1 = pd.read_csv(late.parent / "trades.csv")
+    if len(t0) and len(t1):  # con retraso, la primera entrada no puede ser anterior
+        assert t1["entry_date"].min() > t0["entry_date"].min()
+
+
 @pytest.mark.parametrize("mode", ["oos", "full"])
 def test_runner_candidate_oos_and_full_are_locked(tmp_path, settings, mode):
     from tlab.backtest.runner import OOSGuardError, run_backtest

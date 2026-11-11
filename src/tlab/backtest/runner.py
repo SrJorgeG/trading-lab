@@ -6,6 +6,7 @@ import csv
 import hashlib
 import json
 import tomllib
+from dataclasses import replace
 from datetime import datetime
 from functools import partial
 from pathlib import Path
@@ -174,8 +175,10 @@ def run_backtest(
     registry: Path | None = None,
     settings: dict | None = None,
     strat_cfg: dict | None = None,
+    entry_delay: int = 0,
 ) -> Path:
-    """Ejecuta un backtest y devuelve la ruta del resumen.md."""
+    """Ejecuta un backtest y devuelve la ruta del resumen.md.
+    `entry_delay`: velas extra de retraso en la entrada (estrés del criterio 8)."""
     if mode not in MODES:
         raise ValueError(f"modo desconocido: {mode}")
     s = settings or load_settings()
@@ -214,6 +217,8 @@ def run_backtest(
     bars = {k: data[k] for k in universe}
     costs = cost_models(s, costs_mode)
     cfg = make_cfg(s, sc, costs)
+    if entry_delay:
+        cfg = replace(cfg, entry_delay=int(entry_delay))
     fn = SIGNAL_STRATEGIES[strategy]
     last = min(df.index[-1] for df in bars.values())
     entry_from = None
@@ -246,7 +251,10 @@ def run_backtest(
     beq = benchmark_equity(data, bench, costs, a, b, cfg.initial_equity)
     bm = metrics.summary(beq, None, 252 if asset_class_of(bench) == "equity" else 365)
     stamp = datetime.now(MADRID).strftime("%Y%m%d-%H%M")
-    out = reports_dir / strategy / f"{mode}_{stamp}"
+    tag = ("_stress" if costs_mode == "stress" else "") + (
+        f"_delay{cfg.entry_delay}" if cfg.entry_delay else ""
+    )
+    out = reports_dir / strategy / f"{mode}{tag}_{stamp}"
     rep_rel = str(out.relative_to(reports_dir.parent)) + "/resumen.md"
     extra = []
     if res.kill_switch_date is not None:
@@ -337,7 +345,9 @@ def run_backtest(
         registry,
         strategy,
         {**params, "risk_per_trade": cfg.risk_per_trade} if cand else params,
-        f"{mode}/{costs_mode}" + ("/sin kill switch" if cfg.kill_switch_drawdown is None else ""),
+        f"{mode}/{costs_mode}"
+        + (f"/retraso {cfg.entry_delay} vela [no es variante]" if cfg.entry_delay else "")
+        + ("/sin kill switch" if cfg.kill_switch_drawdown is None else ""),
         _key(st),
         rep_rel,
     )
@@ -586,8 +596,6 @@ def robust_section(
     rep_rel="",
 ) -> str:
     """Robustez IS. Con `registry` (candidatas) cada variante y prueba de estrés se anota."""
-    from dataclasses import replace
-
     run = run or run_signals
     sc = sc or {}
     lines = [
