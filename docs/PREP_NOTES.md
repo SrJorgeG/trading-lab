@@ -25,22 +25,34 @@ revisa y Jorge decide si se fusiona.
 | vectorbt por activo | `src/tlab/backtest/vbt_engine.py` | ✔ (ver diferencias abajo) |
 | Walk-forward, robustez (±25 %, costes ×2, retraso, top-5, Monte Carlo, subperiodos) | `walkforward.py`, `robustness.py` | ✔ básico |
 | Métricas + informes + registro | `metrics.py`, `report.py`, `backtest/runner.py` | ✔ |
-| CLI | `scripts/backtest.py`, `scripts/download_data.py` (= `fetch_data.py`), `scripts/run_baselines.py` | ✔ |
+| CLI | `scripts/backtest.py`, `scripts/download_data.py` (= `fetch_data.py`), `scripts/run_baselines.py`, `scripts/montecarlo.py` | ✔ |
 | Guardia solo-paper | `src/tlab/broker/guard.py`, `alpaca_paper.py` | ✔ (sin órdenes) |
-| Tests | `tests/` | ✔ **56 passed** (+2 de red con `-m network`) |
+| Tests | `tests/` | ✔ **66 passed** (+2 de red con `-m network`; 10 nuevos de Monte Carlo) |
+| Monte Carlo (barajar, bootstrap, bloques) | `src/tlab/backtest/montecarlo.py`, `scripts/montecarlo.py`, `scripts/visor_montecarlo.py` | ✔ ver `docs/MONTECARLO.md` |
 
 ## Cómo se usa
 ```bash
 uv sync
 uv run ruff check . && uv run ruff format --check .
-uv run pytest -q                       # 56 tests, sin red
+uv run pytest -q                       # 66 tests, sin red
 uv run pytest -q -m network            # 2 tests que descargan 5 días de SPY y BTC
 uv run python scripts/fetch_data.py    # regenera data_cache/ (yfinance si no hay claves)
 uv run python scripts/backtest.py --strategy demo_sma --mode full
 uv run python scripts/backtest.py --strategy donchian_atr --mode is     # también wf, robust
 uv run python scripts/backtest.py --strategy <id> --mode oos --confirm-oos   # SOLO Fable, paso 3
 uv run python scripts/run_baselines.py # reescribe docs/baselines.md
+uv run python scripts/montecarlo.py --list
+uv run python scripts/montecarlo.py --run reports/donchian_atr/is_20261111-0140 --method shuffle
+uv run python scripts/montecarlo.py --prepare-baselines
+uv run python scripts/montecarlo.py --run reports/baselines/20261111-0141/donchian_nokill --method bootstrap
+uv run python scripts/montecarlo.py --run reports/baselines/20261111-0141/faber_sma_spy --method block
+uv sync --extra visor && uv run streamlit run scripts/visor_montecarlo.py
 ```
+Monte Carlo: baraja o remuestrea las operaciones (o bloques de rentabilidades
+diarias) para ver si el camino del backtest fue típico o afortunado. Detalle,
+cómo leer los gráficos y advertencias en `docs/MONTECARLO.md`. Los informes de
+las baselines de referencia están en `reports/baselines/20261111-0141/<slug>/`.
+
 Para una candidata nueva: un módulo en `src/tlab/strategies/<id>.py` con
 `generate_signals(bars, params) -> DataFrame[entry, exit, stop_price, rank, (target_price)]`,
 registrarlo en `src/tlab/strategies/__init__.py`, `config/strategies/<id>.toml` (copiar
@@ -90,8 +102,10 @@ parametrizados de `tests/test_lookahead.py` + `test_strategy_<id>_cases`.
    apertura (con el cierre de `t`). Si abre más arriba, el riesgo real puede pasar algo del 1 %.
    El paso 5 debe recalcular o usar órdenes limitadas.
 5. `robust` es básico: rejilla ±25 % sobre `robust_keys` (3^k combinaciones), costes ×2, retraso
-   1 vela, sin top-5, Monte Carlo (1000, semilla 42) y 3 subperiodos. No calcula
-   automáticamente los criterios ✔/✘ de `hipotesis.md` §4: eso lo hace Fable leyendo la tabla.
+   1 vela, sin top-5, Monte Carlo corto (1000, semilla 42, solo DD al barajar) y 3 subperiodos.
+   El módulo completo (`scripts/montecarlo.py`, 5000 sims, abanico, P(kill switch), block
+   bootstrap) se corre aparte; ver `docs/MONTECARLO.md`. No calcula automáticamente los
+   criterios ✔/✘ de `hipotesis.md` §4: eso lo hace Fable leyendo la tabla.
 6. `docs/registro_pruebas.md` ya existe con 2 filas (demo y baseline Donchian IS).
 
 ## PREGUNTAS PARA FABLE (decidir en el paso 1)
