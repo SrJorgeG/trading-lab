@@ -34,6 +34,8 @@ from tlab.data.crosscheck import (  # noqa: E402
     attach_dividends,
     compare_returns,
     exdiv_overlap_stats,
+    to_naive_dates,
+    with_naive_dates,
 )
 from tlab.report import MADRID, now_madrid  # noqa: E402
 
@@ -71,7 +73,9 @@ def _yf_split_only(symbol: str, start: str, end: str) -> pd.DataFrame:
         threads=False,
     )
     if raw is None or raw.empty:
-        return pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
+        empty = pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
+        empty.index = to_naive_dates(pd.DatetimeIndex([], dtype="datetime64[ns]"))
+        return empty
     df = raw.rename(columns=str.lower)
     out = pd.DataFrame(
         {
@@ -82,12 +86,9 @@ def _yf_split_only(symbol: str, start: str, end: str) -> pd.DataFrame:
             "volume": df["volume"],
         }
     ).astype(float)
-    idx = pd.DatetimeIndex(out.index)
-    idx = idx.tz_localize("UTC") if idx.tz is None else idx.tz_convert("UTC")
-    out.index = idx.normalize()
-    return out.loc[
-        (out.index >= pd.Timestamp(start, tz="UTC")) & (out.index <= pd.Timestamp(end, tz="UTC"))
-    ]
+    out = with_naive_dates(out)
+    s, e = pd.Timestamp(start).normalize(), pd.Timestamp(end).normalize()
+    return out.loc[(out.index >= s) & (out.index <= e)]
 
 
 def _fmt_pct(x: float) -> str:
@@ -223,6 +224,10 @@ def main(argv: list[str] | None = None) -> int:
             alp_s = pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
             alp_s.index = pd.DatetimeIndex([], tz="UTC")
 
+        yf_auto = with_naive_dates(yf_auto)
+        yf_split = with_naive_dates(yf_split)
+        alp_a = with_naive_dates(alp_a)
+        alp_s = with_naive_dates(alp_s)
         pairs = {
             "YF auto vs Alpaca all": (yf_auto, alp_a),
             "YF auto vs Alpaca split": (yf_auto, alp_s),

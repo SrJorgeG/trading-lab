@@ -50,6 +50,29 @@ class CheckResult:
     reasons: str
 
 
+def to_naive_dates(idx) -> pd.DatetimeIndex:
+    """Cualquier índice a fechas naive (medianoche, sin tz): object/str, tz-aware o naive."""
+    if len(idx) == 0:
+        return pd.DatetimeIndex([], dtype="datetime64[ns]")
+    dt = pd.DatetimeIndex(pd.to_datetime(idx))
+    if dt.tz is not None:
+        dt = dt.tz_convert("UTC").tz_localize(None)
+    return dt.normalize()
+
+
+def with_naive_dates(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    out.index = to_naive_dates(out.index)
+    return out[~out.index.duplicated(keep="last")].sort_index()
+
+
+def _naive_ts(x) -> pd.Timestamp:
+    t = pd.Timestamp(x)
+    if t.tz is not None:
+        t = t.tz_convert("UTC").tz_localize(None)
+    return t.normalize()
+
+
 def compare_returns(
     symbol: str,
     asset_class: str,
@@ -60,7 +83,8 @@ def compare_returns(
 ) -> tuple[CheckResult, pd.DataFrame]:
     """Compara dos series OHLCV del mismo activo. Devuelve el resumen y el detalle diario."""
     tol = TOLERANCES[asset_class]
-    s, e = pd.Timestamp(start, tz="UTC"), pd.Timestamp(end, tz="UTC")
+    yf, alp = with_naive_dates(yf), with_naive_dates(alp)
+    s, e = _naive_ts(start), _naive_ts(end)
     a = yf.loc[(yf.index >= s) & (yf.index <= e), "close"]
     b = alp.loc[(alp.index >= s) & (alp.index <= e), "close"]
     first_yf = str(yf.index[0].date()) if len(yf) else "—"
@@ -137,19 +161,10 @@ def results_table(results: list[CheckResult]) -> str:
     return "\n".join(lines)
 
 
-def _as_utc_midnight(idx: pd.DatetimeIndex) -> pd.DatetimeIndex:
-    """Fecha de sesión a medianoche UTC (igual que las velas de equity del loader)."""
-    idx = pd.DatetimeIndex(idx)
-    if len(idx) == 0:
-        return pd.DatetimeIndex([], tz="UTC")
-    if idx.tz is None:
-        return idx.normalize().tz_localize("UTC")
-    return idx.tz_convert("America/New_York").normalize().tz_localize(None).tz_localize("UTC")
-
-
 def attach_dividends(det: pd.DataFrame, dividends: pd.Series) -> pd.DataFrame:
     """Añade `div_amount`, `is_exdiv` y `abs_diff_bp` al detalle diario de compare_returns."""
     out = det.copy()
+    out.index = to_naive_dates(out.index)
     if "abs_diff" in out.columns and "abs_diff_bp" not in out.columns:
         out["abs_diff_bp"] = out["abs_diff"] * 1e4
     if dividends is None or len(dividends) == 0:
@@ -157,7 +172,7 @@ def attach_dividends(det: pd.DataFrame, dividends: pd.Series) -> pd.DataFrame:
         out["is_exdiv"] = False
         return out
     div = dividends.copy()
-    div.index = _as_utc_midnight(pd.DatetimeIndex(div.index))
+    div.index = to_naive_dates(div.index)
     div = div[~div.index.duplicated(keep="last")]
     aligned = div.reindex(out.index)
     out["div_amount"] = aligned.astype(float)

@@ -81,10 +81,12 @@ def test_attach_dividends_and_overlap():
     # Fecha naive (como suelen venir los dividendos de yfinance) = el 2.º día.
     divs = pd.Series([0.42], index=pd.DatetimeIndex(["2016-01-05"]))
     out = attach_dividends(det, divs)
-    assert bool(out.loc[idx[1], "is_exdiv"]) is True
-    assert out.loc[idx[1], "div_amount"] == 0.42
-    assert bool(out.loc[idx[0], "is_exdiv"]) is False
-    assert out.loc[idx[1], "abs_diff_bp"] == 50
+    day, prev = pd.Timestamp("2016-01-05"), pd.Timestamp("2016-01-04")
+    assert out.index.tz is None
+    assert bool(out.loc[day, "is_exdiv"]) is True
+    assert out.loc[day, "div_amount"] == 0.42
+    assert bool(out.loc[prev, "is_exdiv"]) is False
+    assert out.loc[day, "abs_diff_bp"] == 50
     stats = exdiv_overlap_stats(out, tol=0.001)
     assert stats["n_over"] == 1 and stats["n_exdiv"] == 1
     assert stats["n_over_and_exdiv"] == 1
@@ -126,3 +128,20 @@ def test_diag_script_skips_without_keys(monkeypatch, capsys, tmp_path):
     assert mod.main(["--out", str(tmp_path / "out")]) == 0
     assert "Sin claves de Alpaca" in capsys.readouterr().out
     assert not (tmp_path / "out").exists()
+
+
+def test_compare_returns_object_and_tz_aware_indexes():
+    """Reproduce el crash del diagnóstico: un índice object/str y otro tz-aware."""
+    b = make_bars(600, seed=1, start="2016-01-01")
+    assert b.index.tz is not None
+    left = b.copy()
+    right = (b * 1.37).copy()
+    right.index = pd.Index(right.index.strftime("%Y-%m-%d"))
+    assert not isinstance(right.index, pd.DatetimeIndex)
+    assert not hasattr(right.index, "tz") or right.index.tz is None
+    r, det = compare_returns("SPY", "equity", left, right, "2016-01-01", "2026-10-31")
+    assert r.verdict == "OK" and r.best_lag == 0 and r.max_abs_diff_bp < 1e-6
+    assert isinstance(det.index, pd.DatetimeIndex) and det.index.tz is None
+    # El otro sentido (object a la izquierda, tz-aware a la derecha) también.
+    r2, det2 = compare_returns("SPY", "equity", right, left, "2016-01-01", "2026-10-31")
+    assert r2.verdict == "OK" and r2.best_lag == 0 and det2.index.tz is None
