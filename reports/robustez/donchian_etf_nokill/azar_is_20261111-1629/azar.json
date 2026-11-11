@@ -1,0 +1,137 @@
+{
+  "tool": "random_benchmark",
+  "title": "donchian_etf — contra el azar",
+  "strategy": "donchian_etf",
+  "kind": "signals",
+  "universe": [
+    "SPY",
+    "EFA",
+    "EEM",
+    "IEF",
+    "GLD",
+    "DBC",
+    "VNQ"
+  ],
+  "params": {
+    "entry_n": 55,
+    "exit_n": 20,
+    "atr_mult": 2.0,
+    "atr_n": 20
+  },
+  "period": "is",
+  "window": [
+    "2007-07-01 00:00:00+00:00",
+    "2020-12-31 00:00:00+00:00"
+  ],
+  "n": 1000,
+  "seed": 42,
+  "metric": "sharpe",
+  "kill_switch": false,
+  "costs_mode": "base",
+  "real": {
+    "sharpe": 0.6969264202382508,
+    "cagr": 0.03550937749879157,
+    "max_dd": -0.09432684050728957,
+    "total_return": 0.6017129050328183,
+    "exposure": 0.42915329244218153,
+    "mar": 0.37645040698726057,
+    "trades": 167.0,
+    "expectancy_r": 0.7665349422212353,
+    "win_rate": 0.4251497005988024,
+    "avg_hold": 39.467065868263475,
+    "kill_switch": ""
+  },
+  "p_value": 0.04695304695304695,
+  "percentile": 0.954,
+  "verdict": "ventaja probable",
+  "match": {
+    "trades": {
+      "real": 167.0,
+      "azar_media": 141.844,
+      "azar_p5": 134.0,
+      "azar_p95": 150.0
+    },
+    "avg_hold": {
+      "real": 39.467065868263475,
+      "azar_media": 38.93733938796319,
+      "azar_p5": 33.4442008830022,
+      "azar_p95": 44.871301742919385
+    },
+    "exposure": {
+      "real": 0.42915329244218153,
+      "azar_media": 0.3221951253893878,
+      "azar_p5": 0.2815773388735778,
+      "azar_p95": 0.36435935837165145
+    },
+    "_calibracion": {
+      "factor_duracion": 1.464532168958984,
+      "pilotos_duracion_media": [
+        29.647417187216963,
+        35.87433842485475,
+        38.29596197341433
+      ]
+    }
+  },
+  "summary": [
+    {
+      "metrica": "sharpe",
+      "real": 0.6969264202382508,
+      "azar_p5": 0.05612678556984324,
+      "azar_mediana": 0.3494360779289863,
+      "azar_p95": 0.6913736684784441,
+      "percentil_real": 0.954,
+      "p_valor": 0.04695304695304695,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "cagr",
+      "real": 0.03550937749879157,
+      "azar_p5": 0.001428359624996889,
+      "azar_mediana": 0.013266801146193719,
+      "azar_p95": 0.02735931701613189,
+      "percentil_real": 0.993,
+      "p_valor": 0.007992007992007992,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "max_dd",
+      "real": -0.09432684050728957,
+      "azar_p5": -0.1521595032560355,
+      "azar_mediana": -0.09372290786862542,
+      "azar_p95": -0.067336076484557,
+      "percentil_real": 0.492,
+      "p_valor": 0.5084915084915085,
+      "veredicto": "indistinguible del azar"
+    },
+    {
+      "metrica": "mar",
+      "real": 0.37645040698726057,
+      "azar_p5": 0.009627928111421762,
+      "azar_mediana": 0.13651432901635707,
+      "azar_p95": 0.3643486644952987,
+      "percentil_real": 0.954,
+      "p_valor": 0.04695304695304695,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "expectancy_r",
+      "real": 0.7665349422212353,
+      "azar_p5": 0.06447703778195939,
+      "azar_mediana": 0.32264316227659956,
+      "azar_p95": 0.6841043340199976,
+      "percentil_real": 0.985,
+      "p_valor": 0.015984015984015984,
+      "veredicto": "ventaja probable"
+    }
+  ],
+  "warnings": [
+    "Ganarle al azar es condición **necesaria, no suficiente**: una estrategia puede batir a los monos y aun así no ganarle a comprar y mantener, o no sobrevivir al kill switch.",
+    "El p-valor es para **una** métrica (Sharpe). Si miras cinco métricas, alguna saldrá 'significativa' por suerte; decide la métrica antes de mirar.",
+    "Los monos hacen menos operaciones (142) que la real (167): algunas entradas al azar no se pueden abrir (gap por debajo del stop o sin hueco). Compáralo con cuidado.",
+    "La exposición media de los monos (32%) difiere de la real (43%) en más de un 15 %: el CAGR no es del todo comparable; fíjate más en Sharpe y expectancy.",
+    "Los monos usan las mismas duraciones (calibradas para que, tras los stops, la duración media se parezca a la real), el mismo stop que daría la estrategia ese día y el mismo sizing del 1 %. Solo cambia CUÁNDO entran.",
+    "Comparación SIN kill switch (como en las baselines).",
+    "Un p-valor in-sample no garantiza nada fuera de muestra (ni en paper)."
+  ],
+  "generated": "2026-11-11 16:29 (hora de Madrid)"
+}

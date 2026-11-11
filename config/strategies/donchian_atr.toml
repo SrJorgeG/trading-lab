@@ -1,0 +1,13 @@
+# BASELINE de referencia (NO pre-registrada). Ruptura Donchian 20/10 con stop 2×ATR(20).
+id = "donchian_atr"
+kind = "signals"
+status = "baseline"
+universe = ["SPY", "QQQ", "BTC/USD"]
+benchmark = "SPY"
+robust_keys = ["entry_n", "exit_n", "atr_mult"]
+
+[params]
+entry_n = 20
+exit_n = 10
+atr_mult = 2.0
+atr_n = 20

@@ -8,6 +8,12 @@ Kit listo para usar en **jorge-cachy** con Claude Code. Objetivo de la semana:
 
 > Aviso honesto: esto es un experimento educativo. Ningún backtest garantiza nada y una semana de paper no demuestra nada estadísticamente. Lo que sí podemos conseguir esta semana: un sistema bien hecho, reglas claras y un historial que vaya creciendo.
 
+> **Rama `prep/motor-backtest`:** el motor del paso 2 (datos, simulador, métricas, 66 tests) y unos
+> baselines de referencia ya están hechos ahí, sin gastar cupo de Claude. Léete
+> [`docs/PREP_NOTES.md`](docs/PREP_NOTES.md) y [`docs/baselines.md`](docs/baselines.md) antes del paso 1.
+> También hay un módulo de Monte Carlo para probar si un backtest fue un camino
+> afortunado: [`docs/MONTECARLO.md`](docs/MONTECARLO.md).
+
 ---
 
 ## Qué hay en el kit

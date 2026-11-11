@@ -1,0 +1,35 @@
+# H3 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.3). No cambiar sin re-registrar.
+id = "rsi2_etf"
+kind = "signals"
+status = "rechazada"
+status_reason = "Paso 3 (2026-11-11): muere en IS: walk-forward 4/8 (criterio 5) y expectancy <= 0 con costes x2 y con retraso (criterios 7 y 8). OOS no ejecutado. Ver docs/veredicto.md"
+universe = ["SPY", "QQQ", "IWM", "DIA", "EFA", "EEM"]
+benchmark = "SPY"
+benchmark_info = { SPY = 0.6, IEF = 0.4 }   # 60/40 con rebalanceo mensual (informativo)
+robust_keys = ["rsi_entry", "exit_sma_n", "atr_mult"]
+start = "2007-07-01"
+is_end = "2020-12-31"
+end = "2026-10-31"
+data_source = "yfinance"      # historia larga (§0): Alpaca solo sirve para contrastar
+min_history_bars = 365          # cada activo entra al universo cuando tiene >= 365 velas
+risk_per_trade = 0.005          # CONGELADO: calibrado en IS (P1), reports/rsi2_etf/is_20261111-1613
+risk_levels = [0.01, 0.0075, 0.005]
+kill_switch_in_backtest = false # P1: métricas sin kill switch; se cuentan los episodios aparte
+subperiods = [["2007-07-01", "2013-12-31"], ["2014-01-01", "2020-06-30"], ["2020-07-01", "2026-10-31"]]
+
+# Pruebas sueltas pre-registradas (§2): trend_n en {150, 250} con el resto por defecto.
+extra_variants = [{ trend_n = 150 }, { trend_n = 250 }]
+
+[walkforward]                   # §3: entrenamiento creciente desde `start`, ventanas fijas
+first_test = "2013-01-01"
+test_months = 12
+n_windows = 8
+min_valid_windows = 5
+
+[params]
+rsi_n = 2
+rsi_entry = 10.0
+trend_n = 200
+exit_sma_n = 5
+atr_mult = 3.0
+atr_n = 20

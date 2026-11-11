@@ -1,0 +1,30 @@
+# H1 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.1). No cambiar sin re-registrar.
+id = "donchian_crypto"
+kind = "signals"
+status = "rechazada"
+status_reason = "Paso 3 (2026-11-11): muere en IS por la calibración P1: DD máx. IS -22,6 % incluso con riesgo 0,5 % (límite 10 %). OOS no ejecutado. Ver docs/veredicto.md"
+universe = ["BTC/USD", "ETH/USD", "LTC/USD", "BCH/USD"]
+benchmark = "BTC/USD"
+benchmark_info = { "BTC/USD" = 0.5 }   # 50 % BTC / 50 % caja, rebalanceo mensual (informativo)
+robust_keys = ["entry_n", "exit_n", "atr_mult"]
+start = "2015-10-01"
+is_end = "2023-06-30"
+end = "2026-10-31"
+data_source = "yfinance"      # historia larga (§0): Alpaca solo sirve para contrastar
+min_history_bars = 365          # cada activo entra al universo cuando tiene >= 365 velas
+risk_per_trade = 0.01           # se calibra en IS (1,0 / 0,75 / 0,5 %) y se congela (P1)
+risk_levels = [0.01, 0.0075, 0.005]
+kill_switch_in_backtest = false # P1: métricas sin kill switch; se cuentan los episodios aparte
+subperiods = [["2015-10-01", "2019-06-30"], ["2019-07-01", "2023-02-28"], ["2023-03-01", "2026-10-31"]]
+
+[walkforward]                   # §3: entrenamiento creciente desde `start`, ventanas fijas
+first_test = "2019-01-01"
+test_months = 9
+n_windows = 6
+min_valid_windows = 5
+
+[params]
+entry_n = 55
+exit_n = 20
+atr_mult = 2.0
+atr_n = 20

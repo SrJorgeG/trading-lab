@@ -1,0 +1,50 @@
+[project]
+name = "tlab"
+version = "0.1.0"
+description = "Trading lab educativo: backtests y paper trading (solo PAPER)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pandas",
+    "numpy",
+    "vectorbt>=1.2,<2",
+    "alpaca-py",
+    "yfinance",
+    "pyarrow",
+    "python-dotenv",
+    "tomli-w",
+    "jinja2",
+    "plotly>=7.1.0",
+    "matplotlib>=3.11.2",
+]
+
+[project.optional-dependencies]
+crypto = ["ccxt"]
+visor = [
+    "streamlit>=1.67.0",
+]
+
+[dependency-groups]
+dev = [
+    "kaleido>=1.5.0",
+    "pytest",
+    "ruff",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tlab"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not network'"
+markers = ["network: tests que usan red (Alpaca/yfinance)"]

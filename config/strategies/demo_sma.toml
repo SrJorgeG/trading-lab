@@ -1,0 +1,13 @@
+# DEMO: solo para probar la tubería. NO es una candidata.
+id = "demo_sma"
+kind = "signals"
+status = "demo"
+universe = ["SPY", "QQQ", "IWM"]
+benchmark = "SPY"
+robust_keys = ["fast", "slow", "atr_mult"]
+
+[params]
+fast = 20
+slow = 100
+atr_mult = 2.0
+atr_n = 14
