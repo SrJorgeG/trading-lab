@@ -24,3 +24,5 @@ state/
 
 # Informes Monte Carlo interactivos (se versionan a propósito)
 !reports/**/montecarlo_*.html
+# Informes de robustez interactivos (mapa de parámetros y contra el azar)
+!reports/robustez/**/*.html

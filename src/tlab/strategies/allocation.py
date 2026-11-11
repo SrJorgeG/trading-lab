@@ -36,10 +36,16 @@ def faber_sma(closes: pd.DataFrame, params: dict) -> pd.DataFrame:
 
 
 def tsmom(closes: pd.DataFrame, params: dict) -> pd.DataFrame:
-    """Momentum de series temporales: largo (1/N) si rentabilidad de `months` meses > 0."""
-    n = int(params.get("months", 12))
+    """Momentum de series temporales: largo (1/N) si rentabilidad de `months` meses > 0.
+
+    `skip` (opcional, por defecto 0) salta los últimos meses: con months=12, skip=1 se mide
+    del mes t-12 al t-1 (el clásico "12-1"). Exige months > skip.
+    """
+    n, k = int(params.get("months", 12)), int(params.get("skip", 0))
+    if not 0 <= k < n:
+        raise ValueError(f"tsmom: hace falta 0 <= skip < months (skip={k}, months={n})")
     m = monthly_closes(closes)
-    r = m / m.shift(n) - 1
+    r = m.shift(k) / m.shift(n) - 1
     sig = (r > 0).astype(float).where(r.notna(), 0.0)
     return sig / closes.shape[1]
 

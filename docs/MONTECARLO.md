@@ -231,3 +231,6 @@ el Donchian, que sí dimensiona al 1 %.
 Si una candidata de Fable «aprueba» el backtest pero el abanico dice que el camino fue
 de los más afortunados, o que el kill switch salta en la mayoría de las sims, eso es
 información para el veredicto: no relajar los criterios.
+
+> Para la robustez frente a los **parámetros** (mapa de calor, meseta o pico, DSR, PBO) y frente
+> al **azar** (1000 estrategias al azar emparejadas), ver [`ROBUSTEZ.md`](ROBUSTEZ.md).

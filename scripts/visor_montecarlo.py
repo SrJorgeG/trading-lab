@@ -1,10 +1,11 @@
-"""Visor local de Monte Carlo (Streamlit).
+"""Pestaña de Monte Carlo del visor (Streamlit).
 
-Pensado como pestaña futura del visualizador de estrategias: la lógica útil
-está en ``render_montecarlo_tab``. Hoy se lanza solo:
+La lógica está en ``render_montecarlo_tab``. Este comando antiguo sigue funcionando y ahora
+abre el visor general (``scripts/visor.py``) con tres pestañas: Monte Carlo, mapa de
+parámetros y contra el azar:
 
     uv sync --extra visor
-    uv run streamlit run scripts/visor_montecarlo.py
+    uv run streamlit run scripts/visor_montecarlo.py   # = uv run streamlit run scripts/visor.py
 """
 
 from __future__ import annotations
@@ -175,19 +176,11 @@ def render_3d_section(st, result, cfg) -> None:
 
 
 def main() -> None:
-    try:
-        import streamlit as st
-    except ImportError:
-        print(
-            "Falta Streamlit. Instálalo en este proyecto con:\n"
-            "  uv sync --extra visor\n"
-            "y lanza:\n"
-            "  uv run streamlit run scripts/visor_montecarlo.py"
-        )
-        sys.exit(1)
-    st.set_page_config(page_title="Monte Carlo — trading-lab", layout="wide")
-    st.title("Visor Monte Carlo")
-    render_montecarlo_tab(st)
+    """Abre el visor general (Monte Carlo + mapa de parámetros + contra el azar)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import visor
+
+    visor.main()
 
 
 if __name__ == "__main__":

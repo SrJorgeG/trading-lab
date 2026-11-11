@@ -27,14 +27,17 @@ revisa y Jorge decide si se fusiona.
 | Métricas + informes + registro | `metrics.py`, `report.py`, `backtest/runner.py` | ✔ |
 | CLI | `scripts/backtest.py`, `scripts/download_data.py` (= `fetch_data.py`), `scripts/run_baselines.py`, `scripts/montecarlo.py` | ✔ |
 | Guardia solo-paper | `src/tlab/broker/guard.py`, `alpaca_paper.py` | ✔ (sin órdenes) |
-| Tests | `tests/` | ✔ **66 passed** (+2 de red con `-m network`; 10 nuevos de Monte Carlo) |
+| Tests | `tests/` | ✔ **111 passed** sin red (+2 de red con `-m network`; incluye Monte Carlo, mapa de parámetros, DSR/PBO, contra el azar y visor) |
 | Monte Carlo (barajar, bootstrap, bloques) | `src/tlab/backtest/montecarlo.py`, `scripts/montecarlo.py`, `scripts/visor_montecarlo.py` | ✔ ver `docs/MONTECARLO.md` |
+| Mapa de parámetros (rejilla 2–3 parámetros, robustez 0–100, DSR, PBO-CSCV) | `src/tlab/backtest/param_sweep.py`, `overfit.py`, `scripts/param_sweep.py` | ✔ ver `docs/ROBUSTEZ.md` |
+| Contra el azar (1000 «monos» emparejados, p-valor) | `src/tlab/backtest/random_benchmark.py`, `scripts/random_benchmark.py` | ✔ ver `docs/ROBUSTEZ.md` |
+| Visor único (Monte Carlo + mapa + azar) | `scripts/visor.py` (el antiguo `visor_montecarlo.py` abre lo mismo) | ✔ |
 
 ## Cómo se usa
 ```bash
 uv sync
 uv run ruff check . && uv run ruff format --check .
-uv run pytest -q                       # 66 tests, sin red
+uv run pytest -q -m 'not network'     # 111 tests, sin red
 uv run pytest -q -m network            # 2 tests que descargan 5 días de SPY y BTC
 uv run python scripts/fetch_data.py    # regenera data_cache/ (yfinance si no hay claves)
 uv run python scripts/backtest.py --strategy demo_sma --mode full
@@ -46,12 +49,23 @@ uv run python scripts/montecarlo.py --run reports/donchian_atr/is_20261111-0140 
 uv run python scripts/montecarlo.py --prepare-baselines
 uv run python scripts/montecarlo.py --run reports/baselines/20261111-0141/donchian_nokill --method bootstrap
 uv run python scripts/montecarlo.py --run reports/baselines/20261111-0141/faber_sma_spy --method block
-uv sync --extra visor && uv run streamlit run scripts/visor_montecarlo.py
+uv run python scripts/param_sweep.py --preset donchian        # mapa 330 combinaciones, solo IS
+uv run python scripts/param_sweep.py --preset tsmom_spy
+uv run python scripts/random_benchmark.py --preset donchian   # 1000 monos, semilla 42, solo IS
+uv run python scripts/random_benchmark.py --preset tsmom_spy
+uv sync --extra visor && uv run streamlit run scripts/visor.py   # (visor_montecarlo.py sigue valiendo)
 ```
 Monte Carlo: baraja o remuestrea las operaciones (o bloques de rentabilidades
 diarias) para ver si el camino del backtest fue típico o afortunado. Detalle,
 cómo leer los gráficos y advertencias en `docs/MONTECARLO.md`. Los informes de
 las baselines de referencia están en `reports/baselines/20261111-0141/<slug>/`.
+
+Robustez: el **mapa de parámetros** dice si el resultado aguanta al mover los parámetros
+(meseta) o es un pico; el **contra el azar** compara con 1000 estrategias que entran al azar con
+las mismas reglas y costes. Los dos son **solo in-sample** por defecto (OOS exige
+`--confirm-oos`) y cada barrido se anota en `docs/registro_pruebas.md` con su nº de
+configuraciones. Detalle, cómo leerlos y resultados de Donchian/TSMOM en `docs/ROBUSTEZ.md`;
+informes en `reports/robustez/<slug>/`.
 
 Para una candidata nueva: un módulo en `src/tlab/strategies/<id>.py` con
 `generate_signals(bars, params) -> DataFrame[entry, exit, stop_price, rank, (target_price)]`,
@@ -106,7 +120,12 @@ parametrizados de `tests/test_lookahead.py` + `test_strategy_<id>_cases`.
    El módulo completo (`scripts/montecarlo.py`, 5000 sims, abanico, P(kill switch), block
    bootstrap) se corre aparte; ver `docs/MONTECARLO.md`. No calcula automáticamente los
    criterios ✔/✘ de `hipotesis.md` §4: eso lo hace Fable leyendo la tabla.
-6. `docs/registro_pruebas.md` ya existe con 2 filas (demo y baseline Donchian IS).
+6. `docs/registro_pruebas.md` ya existe con 6 filas: demo, baseline Donchian IS, 2 barridos
+   (Donchian N=330, TSMOM N=72; cuentan como intentos para el DSR) y 2 benchmarks contra el azar
+   (marcados «[benchmark azar, no es variante]», no cuentan como intentos).
+7. Las herramientas de robustez usan yfinance y van sin kill switch en las corridas de
+   referencia de Donchian; en el «contra el azar» de Donchian los monos quedan algo menos
+   expuestos que la real (40 % frente a 46 %). Ver advertencias en `docs/ROBUSTEZ.md`.
 
 ## PREGUNTAS PARA FABLE (decidir en el paso 1)
 1. **Kill switch en backtest**: con la regla literal, la cartera Donchian de baseline se para en
@@ -147,3 +166,9 @@ parametrizados de `tests/test_lookahead.py` + `test_strategy_<id>_cases`.
   walk-forward/fechas a lo pre-registrado). Aproximadamente 1 sesión de Sonnet en vez de 2.
 - **Prompt 03**: en "Lee primero" cambiar `docs/progreso_paso2.md` por `docs/PREP_NOTES.md`
   (o leer ambos); en la Fase A, empezar por la lista "Qué debería auditar Fable primero".
+  Añadir en la Fase B, paso 4 «Robustez» (además de `--mode robust`; **solo in-sample y con los parámetros ya pre-registrados**):
+  por cada candidata, `scripts/param_sweep.py --strategy <id> --grid ... ` (2–3 parámetros,
+  meseta ≥ 70 y PBO < 50 % como señales a favor, sin elegir la mejor celda) y
+  `scripts/random_benchmark.py --strategy <id> --n 1000 --seed 42` (umbral fijado antes:
+  p < 0,05). Cada barrido suma su nº de configuraciones al registro y al N del DSR: anotarlo
+  en el veredicto. Nunca `--period oos` con estas herramientas. Ver `docs/ROBUSTEZ.md`.

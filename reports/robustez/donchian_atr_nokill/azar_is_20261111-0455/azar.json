@@ -1,0 +1,131 @@
+{
+  "tool": "random_benchmark",
+  "title": "Donchian 20/10 (SPY, QQQ, BTC) sin kill switch",
+  "strategy": "donchian_atr",
+  "kind": "signals",
+  "universe": [
+    "SPY",
+    "QQQ",
+    "BTC/USD"
+  ],
+  "params": {
+    "entry_n": 20,
+    "exit_n": 10,
+    "atr_mult": 2.0,
+    "atr_n": 20
+  },
+  "period": "is",
+  "window": [
+    "2015-09-17 00:00:00+00:00",
+    "2023-07-06 16:48:00+00:00"
+  ],
+  "n": 1000,
+  "seed": 42,
+  "metric": "sharpe",
+  "kill_switch": false,
+  "costs_mode": "base",
+  "real": {
+    "sharpe": 1.6014498789048224,
+    "cagr": 0.22452707046911446,
+    "max_dd": -0.12205695878019251,
+    "total_return": 3.8547345447346393,
+    "exposure": 0.46441166513625737,
+    "mar": 1.8395269938968106,
+    "trades": 116.0,
+    "expectancy_r": 1.5864573714441592,
+    "win_rate": 0.5344827586206896,
+    "avg_hold": 29.75,
+    "kill_switch": ""
+  },
+  "p_value": 0.03396603396603397,
+  "percentile": 0.967,
+  "verdict": "ventaja probable",
+  "match": {
+    "trades": {
+      "real": 116.0,
+      "azar_media": 110.435,
+      "azar_p5": 104.0,
+      "azar_p95": 116.0
+    },
+    "avg_hold": {
+      "real": 29.75,
+      "azar_media": 29.02527990975935,
+      "azar_p5": 24.82577359968664,
+      "azar_p95": 33.87661172161172
+    },
+    "exposure": {
+      "real": 0.46441166513625737,
+      "azar_media": 0.4017093255429262,
+      "azar_p5": 0.34421237992826104,
+      "azar_p95": 0.46220190499508207
+    },
+    "_calibracion": {
+      "factor_duracion": 1.5525695730271525,
+      "pilotos_duracion_media": [
+        21.57468453273363,
+        27.42578865741382,
+        28.661984733860976
+      ]
+    }
+  },
+  "summary": [
+    {
+      "metrica": "sharpe",
+      "real": 1.6014498789048224,
+      "azar_p5": 0.7679295500110513,
+      "azar_mediana": 1.1798933760694506,
+      "azar_p95": 1.5720332616116452,
+      "percentil_real": 0.967,
+      "p_valor": 0.03396603396603397,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "cagr",
+      "real": 0.22452707046911446,
+      "azar_p5": 0.06571731404181538,
+      "azar_mediana": 0.12059985448381161,
+      "azar_p95": 0.1917078741630989,
+      "percentil_real": 0.986,
+      "p_valor": 0.014985014985014986,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "max_dd",
+      "real": -0.12205695878019251,
+      "azar_p5": -0.21582429350924393,
+      "azar_mediana": -0.15435100308832206,
+      "azar_p95": -0.11260957376338536,
+      "percentil_real": 0.886,
+      "p_valor": 0.11488511488511488,
+      "veredicto": "indistinguible del azar"
+    },
+    {
+      "metrica": "mar",
+      "real": 1.8395269938968106,
+      "azar_p5": 0.37989576524454016,
+      "azar_mediana": 0.7797627654520942,
+      "azar_p95": 1.3427922585092946,
+      "percentil_real": 0.996,
+      "p_valor": 0.004995004995004995,
+      "veredicto": "ventaja probable"
+    },
+    {
+      "metrica": "expectancy_r",
+      "real": 1.5864573714441592,
+      "azar_p5": 0.5371763252288239,
+      "azar_mediana": 0.950771098210152,
+      "azar_p95": 1.6127105567056164,
+      "percentil_real": 0.946,
+      "p_valor": 0.054945054945054944,
+      "veredicto": "indicio débil (no concluyente)"
+    }
+  ],
+  "warnings": [
+    "Ganarle al azar es condición **necesaria, no suficiente**: una estrategia puede batir a los monos y aun así no ganarle a comprar y mantener, o no sobrevivir al kill switch.",
+    "El p-valor es para **una** métrica (Sharpe). Si miras cinco métricas, alguna saldrá 'significativa' por suerte; decide la métrica antes de mirar.",
+    "Los monos usan las mismas duraciones (calibradas para que, tras los stops, la duración media se parezca a la real), el mismo stop que daría la estrategia ese día y el mismo sizing del 1 %. Solo cambia CUÁNDO entran.",
+    "Comparación SIN kill switch (como en las baselines).",
+    "Un p-valor in-sample no garantiza nada fuera de muestra (ni en paper)."
+  ],
+  "generated": "2026-11-11 04:55 (hora de Madrid)"
+}

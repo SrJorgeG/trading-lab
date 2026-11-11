@@ -80,3 +80,21 @@ def test_monthly_closes_uses_last_bar_of_month():
     c = pd.DataFrame({"SPY": [1, 2, 3, 4, 5.0]}, index=idx)
     m = monthly_closes(c)
     assert list(m["SPY"]) == [2, 4, 5]
+
+
+def test_tsmom_skip_default_and_validation():
+    import pandas as pd
+    import pytest
+    from conftest import make_bars
+
+    from tlab.strategies.allocation import monthly_closes, tsmom
+
+    c = pd.DataFrame({"SPY": make_bars(800, seed=9)["close"]})
+    base = tsmom(c, {"months": 12})
+    assert base.equals(tsmom(c, {"months": 12, "skip": 0}))
+    m = monthly_closes(c)
+    r = m.shift(1) / m.shift(12) - 1
+    exp = (r > 0).astype(float).where(r.notna(), 0.0)
+    pd.testing.assert_frame_equal(tsmom(c, {"months": 12, "skip": 1}), exp)
+    with pytest.raises(ValueError):
+        tsmom(c, {"months": 3, "skip": 3})

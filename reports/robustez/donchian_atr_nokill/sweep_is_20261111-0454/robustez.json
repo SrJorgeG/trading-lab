@@ -1,0 +1,274 @@
+{
+  "tool": "param_sweep",
+  "title": "Donchian (SPY, QQQ, BTC) sin kill switch",
+  "strategy": "donchian_atr",
+  "kind": "signals",
+  "universe": [
+    "SPY",
+    "QQQ",
+    "BTC/USD"
+  ],
+  "period": "is",
+  "window": [
+    "2015-09-17 00:00:00+00:00",
+    "2023-07-06 16:48:00+00:00"
+  ],
+  "axes": {
+    "entry_n": [
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      55,
+      60
+    ],
+    "exit_n": [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30
+    ],
+    "atr_mult": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      3.5
+    ]
+  },
+  "defaults": {
+    "entry_n": 20,
+    "exit_n": 10,
+    "atr_mult": 2.0
+  },
+  "default_idx": [
+    2,
+    1,
+    1
+  ],
+  "params_base": {
+    "entry_n": 20,
+    "exit_n": 10,
+    "atr_mult": 2.0,
+    "atr_n": 20
+  },
+  "metric": "sharpe",
+  "tol": 0.2,
+  "kill_switch": false,
+  "costs_mode": "base",
+  "n_configs": 330,
+  "registry_trials_before": 1,
+  "robustness": {
+    "sharpe": {
+      "score": 89.3,
+      "verdict": "meseta: robusto a los parámetros",
+      "best_idx": [
+        2,
+        1,
+        1
+      ],
+      "best": 1.6014498789048224,
+      "median": 1.2099474071943255,
+      "best_median_ratio": 1.323569825748318,
+      "neighbor_share": 0.8846153846153846,
+      "n_neighbors": 26,
+      "plateau_share": 0.30606060606060603,
+      "plateau_cells": 101,
+      "plateau_width": {
+        "0": 0.7272727272727273,
+        "1": 1.0,
+        "2": 1.0
+      },
+      "share_within_tol": 0.30606060606060603,
+      "share_positive": 1.0,
+      "best_on_edge": [],
+      "n_valid": 330,
+      "tol": 0.2,
+      "default_value": 1.6014498789048224,
+      "default_pct_rank": 1.0,
+      "default_gap": 0.0,
+      "default_neighbor_share": 0.8846153846153846,
+      "default_in_plateau": true,
+      "metric": "sharpe"
+    },
+    "cagr": {
+      "score": 56.2,
+      "verdict": "mixto: hay zona buena pero estrecha, mirar con lupa",
+      "best_idx": [
+        2,
+        2,
+        0
+      ],
+      "best": 0.2600652553137921,
+      "median": 0.14244835505471865,
+      "best_median_ratio": 1.8256810000641517,
+      "neighbor_share": 0.7058823529411765,
+      "n_neighbors": 17,
+      "plateau_share": 0.1,
+      "plateau_cells": 33,
+      "plateau_width": {
+        "0": 0.6363636363636364,
+        "1": 0.8333333333333334,
+        "2": 0.4
+      },
+      "share_within_tol": 0.1,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        2
+      ],
+      "n_valid": 330,
+      "tol": 0.2,
+      "default_value": 0.22452707046911446,
+      "default_pct_rank": 0.9454545454545454,
+      "default_gap": 0.13665102938029003,
+      "default_neighbor_share": 0.38461538461538464,
+      "default_in_plateau": true,
+      "metric": "cagr"
+    },
+    "max_dd": {
+      "score": 57.6,
+      "verdict": "mixto: hay zona buena pero estrecha, mirar con lupa",
+      "best_idx": [
+        3,
+        0,
+        4
+      ],
+      "best": -0.08171114203246777,
+      "median": -0.14541171021129662,
+      "best_median_ratio": 1.7795823171191916,
+      "neighbor_share": 0.8181818181818182,
+      "n_neighbors": 11,
+      "plateau_share": 0.05454545454545454,
+      "plateau_cells": 18,
+      "plateau_width": {
+        "0": 0.5454545454545454,
+        "1": 0.3333333333333333,
+        "2": 0.6
+      },
+      "share_within_tol": 0.09393939393939393,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1,
+        2
+      ],
+      "n_valid": 330,
+      "tol": 0.2,
+      "default_value": -0.12205695878019251,
+      "default_pct_rank": 0.7696969696969697,
+      "default_gap": 0.3305490907763965,
+      "default_neighbor_share": 0.6923076923076923,
+      "default_in_plateau": false,
+      "metric": "max_dd"
+    },
+    "mar": {
+      "score": 25.2,
+      "verdict": "pico: probable sobreajuste",
+      "best_idx": [
+        2,
+        1,
+        1
+      ],
+      "best": 1.8395269938968106,
+      "median": 0.9544550803821016,
+      "best_median_ratio": 1.9273059903043148,
+      "neighbor_share": 0.23076923076923078,
+      "n_neighbors": 26,
+      "plateau_share": 0.03333333333333333,
+      "plateau_cells": 11,
+      "plateau_width": {
+        "0": 0.2727272727272727,
+        "1": 0.16666666666666666,
+        "2": 1.0
+      },
+      "share_within_tol": 0.03939393939393939,
+      "share_positive": 1.0,
+      "best_on_edge": [],
+      "n_valid": 330,
+      "tol": 0.2,
+      "default_value": 1.8395269938968106,
+      "default_pct_rank": 1.0,
+      "default_gap": 0.0,
+      "default_neighbor_share": 0.23076923076923078,
+      "default_in_plateau": true,
+      "metric": "mar"
+    },
+    "expectancy_r": {
+      "score": 50.8,
+      "verdict": "mixto: hay zona buena pero estrecha, mirar con lupa",
+      "best_idx": [
+        4,
+        5,
+        0
+      ],
+      "best": 3.457630443391156,
+      "median": 1.6018727843275724,
+      "best_median_ratio": 2.1584925327528968,
+      "neighbor_share": 0.7272727272727273,
+      "n_neighbors": 11,
+      "plateau_share": 0.051515151515151514,
+      "plateau_cells": 17,
+      "plateau_width": {
+        "0": 0.7272727272727273,
+        "1": 0.5,
+        "2": 0.4
+      },
+      "share_within_tol": 0.051515151515151514,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1,
+        2
+      ],
+      "n_valid": 330,
+      "tol": 0.2,
+      "default_value": 1.5864573714441592,
+      "default_pct_rank": 0.49696969696969695,
+      "default_gap": 0.5411720837672281,
+      "default_neighbor_share": 0.5769230769230769,
+      "default_in_plateau": false,
+      "metric": "expectancy_r"
+    }
+  },
+  "overfit": {
+    "dsr": {
+      "dsr": 0.9994946941662392,
+      "psr0": 0.9999964373373647,
+      "sr": 0.08380891235403855,
+      "sr0": 0.02244321229508415,
+      "n_trials": 330,
+      "t": 2850,
+      "skew": 0.5782569450415082,
+      "kurt": 24.414998671813013,
+      "var_sr": 5.885945822477408e-05
+    },
+    "dsr_registry": {
+      "dsr": 0.9994939980467121,
+      "psr0": 0.9999964373373647,
+      "sr": 0.08380891235403855,
+      "sr0": 0.02245044801818356,
+      "n_trials": 331,
+      "t": 2850,
+      "skew": 0.5782569450415082,
+      "kurt": 24.414998671813013,
+      "var_sr": 5.885945822477408e-05
+    },
+    "pbo": {
+      "pbo": 0.33224553224553227,
+      "n_combos": 12870,
+      "n_blocks": 16,
+      "oos_sr_of_best_median": 0.06876284607123623
+    }
+  },
+  "warnings": [
+    "Se han probado **330 configuraciones**. Quedarse con la mejor de 330 infla el resultado por pura suerte (sesgo de selección). Usa el mapa para ver la FORMA (meseta o pico), no para elegir el máximo.",
+    "PBO = 33%: riesgo de sobreajuste moderado al elegir la mejor.",
+    "Barrido SIN kill switch (como en las baselines). Con la regla del 10 % activada los números cambian mucho; repite con kill switch antes de cualquier veredicto."
+  ],
+  "generated": "2026-11-11 04:54 (hora de Madrid)"
+}
