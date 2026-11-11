@@ -1,0 +1,113 @@
+{
+  "tool": "random_benchmark",
+  "title": "TSMOM 12 meses (SPY)",
+  "strategy": "tsmom_12m",
+  "kind": "weights",
+  "universe": [
+    "SPY"
+  ],
+  "params": {
+    "months": 12,
+    "skip": 0
+  },
+  "period": "is",
+  "window": [
+    "2005-01-01 00:00:00+00:00",
+    "2020-04-20 02:24:00+00:00"
+  ],
+  "n": 1000,
+  "seed": 42,
+  "metric": "sharpe",
+  "kill_switch": true,
+  "costs_mode": "base",
+  "real": {
+    "sharpe": 0.49455286493689604,
+    "cagr": 0.06378610229680692,
+    "max_dd": -0.33717268745960116,
+    "total_return": 1.5745423252301154,
+    "exposure": 0.8441558441558441,
+    "mar": 0.18917932759440828,
+    "trades": 12.0,
+    "expectancy_r": null,
+    "win_rate": null,
+    "avg_hold": null,
+    "kill_switch": "",
+    "changes": 11
+  },
+  "p_value": 0.3256743256743257,
+  "percentile": 0.675,
+  "verdict": "indistinguible del azar",
+  "match": {
+    "trades": {
+      "real": 12.0,
+      "azar_media": 11.531,
+      "azar_p5": 11.0,
+      "azar_p95": 12.0
+    },
+    "exposure": {
+      "real": 0.8441558441558441,
+      "azar_media": 0.8434857142857143,
+      "azar_p5": 0.8412987012987013,
+      "azar_p95": 0.8457142857142858
+    },
+    "changes": {
+      "real": 11.0,
+      "azar_media": 11.0,
+      "azar_p5": 11.0,
+      "azar_p95": 11.0
+    },
+    "_calibracion": {
+      "factor_duracion": 1.0,
+      "pilotos_duracion_media": []
+    }
+  },
+  "summary": [
+    {
+      "metrica": "sharpe",
+      "real": 0.49455286493689604,
+      "azar_p5": 0.3393508048667553,
+      "azar_mediana": 0.4527756852415994,
+      "azar_p95": 0.6968560179323263,
+      "percentil_real": 0.675,
+      "p_valor": 0.3256743256743257,
+      "veredicto": "indistinguible del azar"
+    },
+    {
+      "metrica": "cagr",
+      "real": 0.06378610229680692,
+      "azar_p5": 0.046357431368424955,
+      "azar_mediana": 0.06700825259658316,
+      "azar_p95": 0.10022943715592027,
+      "percentil_real": 0.42,
+      "p_valor": 0.5804195804195804,
+      "veredicto": "indistinguible del azar"
+    },
+    {
+      "metrica": "max_dd",
+      "real": -0.33717268745960116,
+      "azar_p5": -0.554459235267667,
+      "azar_mediana": -0.5518945035895824,
+      "azar_p95": -0.33717268745960116,
+      "percentil_real": 0.957,
+      "p_valor": 0.07692307692307693,
+      "veredicto": "indicio débil (no concluyente)"
+    },
+    {
+      "metrica": "mar",
+      "real": 0.18917932759440828,
+      "azar_p5": 0.08496857620276768,
+      "azar_mediana": 0.12425934744205289,
+      "azar_p95": 0.30106519670950815,
+      "percentil_real": 0.859,
+      "p_valor": 0.14185814185814186,
+      "veredicto": "indistinguible del azar"
+    }
+  ],
+  "warnings": [
+    "Ganarle al azar es condición **necesaria, no suficiente**: una estrategia puede batir a los monos y aun así no ganarle a comprar y mantener, o no sobrevivir al kill switch.",
+    "El p-valor es para **una** métrica (Sharpe). Si miras cinco métricas, alguna saldrá 'significativa' por suerte; decide la métrica antes de mirar.",
+    "Los monos de una estrategia mensual tienen exactamente los mismos meses invertidos y el mismo nº de cambios; con un solo activo y pocos cambios hay pocas combinaciones distintas, así que el p-valor es grueso.",
+    "Un p-valor in-sample no garantiza nada fuera de muestra (ni en paper)."
+  ],
+  "generated": "2026-11-11 04:55 (hora de Madrid)"
+}

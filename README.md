@@ -44,8 +44,11 @@ Informes ya en `main` (el código del motor sigue en la rama [`prep/motor-backte
 | [`docs/VERIFICACIONES.md`](docs/VERIFICACIONES.md) | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) |
 | [`docs/research-llm-trading.md`](docs/research-llm-trading.md) | Qué dice la evidencia sobre LLMs operando, errores típicos de bots y encargos para Fable |
 | [`docs/MONTECARLO.md`](docs/MONTECARLO.md) | Qué es una simulación de Monte Carlo, cómo leer el abanico y las corridas de referencia (Donchian, Faber, TSMOM) |
+| [`docs/ROBUSTEZ.md`](docs/ROBUSTEZ.md) | Mapa de parámetros (meseta o pico, DSR, PBO) y prueba contra 1000 estrategias al azar; resultados de Donchian y TSMOM |
+| [Mapa Donchian](reports/robustez/donchian_atr_nokill/sweep_is_20261111-0454/resumen.md) · [vs azar](reports/robustez/donchian_atr_nokill/azar_is_20261111-0455/resumen.md) | Donchian sin kill switch, in-sample: robustez 89/100 (meseta), PBO 33 %; contra el azar p = 0,034 (ventaja probable) |
+| [Mapa TSMOM SPY](reports/robustez/tsmom_12m_spy/sweep_is_20261111-0454/resumen.md) · [vs azar](reports/robustez/tsmom_12m_spy/azar_is_20261111-0455/resumen.md) | TSMOM SPY, in-sample: robustez 97/100 pero PBO 87 % (no optimizar); contra el azar p = 0,33 (indistinguible) |
 
-Los CSV y resúmenes de las corridas de referencia están en `reports/`. Los informes de Monte Carlo (md, csv, html, png) están en `reports/baselines/20261111-0141/<slug>/`.
+Los CSV y resúmenes de las corridas de referencia están en `reports/`. Los informes de Monte Carlo (md, csv, html, png) están en `reports/baselines/20261111-0141/<slug>/`. Los de robustez (mapa de parámetros y contra el azar) están en `reports/robustez/<slug>/`.
 
 ---
 

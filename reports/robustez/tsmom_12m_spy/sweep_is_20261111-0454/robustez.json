@@ -1,0 +1,233 @@
+{
+  "tool": "param_sweep",
+  "title": "TSMOM (SPY): meses de lookback × meses saltados",
+  "strategy": "tsmom_12m",
+  "kind": "weights",
+  "universe": [
+    "SPY"
+  ],
+  "period": "is",
+  "window": [
+    "2005-01-01 00:00:00+00:00",
+    "2020-04-20 02:24:00+00:00"
+  ],
+  "axes": {
+    "months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "skip": [
+      0,
+      1,
+      2
+    ]
+  },
+  "defaults": {
+    "months": 12,
+    "skip": 0
+  },
+  "default_idx": [
+    11,
+    0
+  ],
+  "params_base": {
+    "months": 12,
+    "skip": 0
+  },
+  "metric": "sharpe",
+  "tol": 0.2,
+  "kill_switch": true,
+  "costs_mode": "base",
+  "n_configs": 72,
+  "registry_trials_before": 0,
+  "robustness": {
+    "sharpe": {
+      "score": 96.8,
+      "verdict": "meseta: robusto a los parámetros",
+      "best_idx": [
+        18,
+        2
+      ],
+      "best": 0.6656002416368939,
+      "median": 0.5574733622880104,
+      "best_median_ratio": 1.1939588268488808,
+      "neighbor_share": 1.0,
+      "n_neighbors": 5,
+      "plateau_share": 0.5362318840579711,
+      "plateau_cells": 37,
+      "plateau_width": {
+        "0": 0.625,
+        "1": 1.0
+      },
+      "share_within_tol": 0.6521739130434783,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1
+      ],
+      "n_valid": 69,
+      "tol": 0.2,
+      "default_value": 0.49455286493689604,
+      "default_pct_rank": 0.2463768115942029,
+      "default_gap": 0.2569821433347821,
+      "default_neighbor_share": 1.0,
+      "default_in_plateau": false,
+      "metric": "sharpe"
+    },
+    "cagr": {
+      "score": 95.9,
+      "verdict": "meseta: robusto a los parámetros",
+      "best_idx": [
+        18,
+        2
+      ],
+      "best": 0.09331996190128256,
+      "median": 0.0742349502710069,
+      "best_median_ratio": 1.2570893030924473,
+      "neighbor_share": 1.0,
+      "n_neighbors": 5,
+      "plateau_share": 0.43478260869565216,
+      "plateau_cells": 30,
+      "plateau_width": {
+        "0": 0.5416666666666666,
+        "1": 1.0
+      },
+      "share_within_tol": 0.4927536231884058,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1
+      ],
+      "n_valid": 69,
+      "tol": 0.2,
+      "default_value": 0.06378610229680692,
+      "default_pct_rank": 0.2898550724637681,
+      "default_gap": 0.31647955059944927,
+      "default_neighbor_share": 1.0,
+      "default_in_plateau": false,
+      "metric": "cagr"
+    },
+    "max_dd": {
+      "score": 25.4,
+      "verdict": "pico: probable sobreajuste",
+      "best_idx": [
+        2,
+        0
+      ],
+      "best": -0.2112162544109637,
+      "median": -0.33717268745960116,
+      "best_median_ratio": 1.5963387306526318,
+      "neighbor_share": 0.2,
+      "n_neighbors": 5,
+      "plateau_share": 0.028985507246376812,
+      "plateau_cells": 2,
+      "plateau_width": {
+        "0": 0.08333333333333333,
+        "1": 0.3333333333333333
+      },
+      "share_within_tol": 0.028985507246376812,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1
+      ],
+      "n_valid": 69,
+      "tol": 0.2,
+      "default_value": -0.33717268745960116,
+      "default_pct_rank": 0.855072463768116,
+      "default_gap": 0.37356653647614646,
+      "default_neighbor_share": 1.0,
+      "default_in_plateau": false,
+      "metric": "max_dd"
+    },
+    "mar": {
+      "score": 27.7,
+      "verdict": "pico: probable sobreajuste",
+      "best_idx": [
+        2,
+        0
+      ],
+      "best": 0.3042775361672431,
+      "median": 0.2256711091764178,
+      "best_median_ratio": 1.348322952271994,
+      "neighbor_share": 0.2,
+      "n_neighbors": 5,
+      "plateau_share": 0.028985507246376812,
+      "plateau_cells": 2,
+      "plateau_width": {
+        "0": 0.08333333333333333,
+        "1": 0.3333333333333333
+      },
+      "share_within_tol": 0.30434782608695654,
+      "share_positive": 1.0,
+      "best_on_edge": [
+        1
+      ],
+      "n_valid": 69,
+      "tol": 0.2,
+      "default_value": 0.18917932759440828,
+      "default_pct_rank": 0.2898550724637681,
+      "default_gap": 0.3782671899563833,
+      "default_neighbor_share": 1.0,
+      "default_in_plateau": false,
+      "metric": "mar"
+    }
+  },
+  "overfit": {
+    "dsr": {
+      "dsr": 0.969303347832817,
+      "psr0": 0.994801939013199,
+      "sr": 0.04192342027288042,
+      "sr0": 0.011317297033257845,
+      "n_trials": 69,
+      "t": 3850,
+      "skew": -0.5288127258469494,
+      "kurt": 19.58329564651226,
+      "var_sr": 2.2288764941228904e-05
+    },
+    "dsr_registry": {
+      "dsr": 0.9689897258791013,
+      "psr0": 0.994801939013199,
+      "sr": 0.04192342027288042,
+      "sr0": 0.011390977860667445,
+      "n_trials": 72,
+      "t": 3850,
+      "skew": -0.5288127258469494,
+      "kurt": 19.58329564651226,
+      "var_sr": 2.2288764941228904e-05
+    },
+    "pbo": {
+      "pbo": 0.8671328671328671,
+      "n_combos": 12870,
+      "n_blocks": 16,
+      "oos_sr_of_best_median": 0.02578645334279997
+    }
+  },
+  "warnings": [
+    "Se han probado **72 configuraciones**. Quedarse con la mejor de 72 infla el resultado por pura suerte (sesgo de selección). Usa el mapa para ver la FORMA (meseta o pico), no para elegir el máximo.",
+    "El mejor resultado está en el **borde** de la rejilla (skip): el óptimo podría estar fuera. Ampliar la rejilla suma configuraciones (y anótalo en el registro).",
+    "Los parámetros por defecto **no** están en la meseta del mejor: si se cambian para 'subirse' al máximo, eso es una variante nueva que hay que re-validar.",
+    "**PBO = 87%**: la configuración que gana en una mitad de la historia queda por debajo de la mediana en la otra mitad la mayoría de las veces. Elegir 'la mejor' aquí no aporta nada. Con una meseta ancha es lo esperable: las combinaciones dan casi lo mismo y su orden cambia por ruido. Lectura práctica: no optimices, quédate con los parámetros pre-registrados (o los de manual).",
+    "Estrategia mensual por pesos (allocation_sim): sin stop ni 1 % de riesgo ni kill switch. Es una referencia, no cumple las reglas duras tal cual."
+  ],
+  "generated": "2026-11-11 04:54 (hora de Madrid)"
+}
