@@ -319,3 +319,22 @@ Casos a mano (`rsi_n=2, rsi_entry=10, trend_n=20, exit_sma_n=2, atr_mult=3, atr_
 7. Benchmarks: buy & hold SPY y BTC, 60/40 SPY/IEF y 50 % BTC / 50 % caja (rebalanceo mensual), con costes.
 8. Contraste yfinance ↔ Alpaca en el tramo común y verificación de las fechas de inicio de `ETH-USD`, `BCH-USD`, `LTC-USD` en yfinance.
 9. **Prohibido para Sonnet:** ejecutar `--mode oos` o cualquier cosa sobre fechas OOS de las candidatas. Eso lo hace Fable en el paso 3, una vez.
+
+## Enmiendas
+
+### 2026-11-11 (hora de Madrid) — Fable, paso 3, ANTES de ejecutar ningún backtest de las candidatas
+Ningún criterio de §4 cambia. Son aclaraciones de procedimiento a las dudas de
+`docs/INFORME_PASO2.md` §5, escritas sin haber visto ningún resultado de las candidatas.
+
+1. **IS ahora:** los backtests in-sample se ejecutan en el paso 3, tras la auditoría (fase A). Confirmado.
+2. **"≥ 365 velas"** = 365 velas del propio activo (lectura literal). `DBC` entra el 2007-07-19.
+3. **Tope equity/3** = `0.3333 × equity` sobre el coste con slippage y comisión. Confirmado.
+4. **Episodios de kill switch:** el máximo se reinicia al equity del día del episodio (lectura literal de §3). Confirmado.
+5. **Calibración P1:** DD sobre equity al cierre diario del IS, sin kill switch. Las ejecuciones al 0,75 % y 0,5 % cuentan en el presupuesto de 40. Tras calibrar, `risk_per_trade` del TOML se fija en la `f` elegida y **walk-forward, robustez, azar y OOS se ejecutan con esa `f`**.
+6. **Criterios que necesitan el periodo completo (1, 4, 9, 11, 13):** se miden con **una** ejecución `--mode full` posterior al OOS, con los mismos parámetros congelados. No es una segunda mirada para ajustar nada: el aprobado/suspenso del OOS (criterios 2, 3, 12 y la parte OOS de 7 y 8) sale solo de la ejecución `--mode oos` (que arranca con 10.000 $ y sin posiciones el primer día del OOS). Las ejecuciones de estrés en OOS (costes × 2 y retraso) y la `full` quedan anotadas en `reports/oos_log.csv` con el mismo hash de parámetros.
+7. **Walk-forward:** se aceptan las convenciones de Sonnet (ventana arranca sin posiciones; lo abierto al final se cierra con costes; positiva = neto > 0; Sharpe NaN = el peor; solo se anota la fila del WF).
+8. **Criterio 6:** una vecina sin operaciones cuenta como fallo; vecinas = rejilla menos la central. Confirmado (es la lectura más dura).
+9. **Benchmarks:** confirmado.
+10. **Criterio 10 (Monte Carlo):** se evalúa sobre las operaciones del IS antes del OOS (filtro) y, si la candidata llega al final, también sobre las del periodo completo; deben cumplirse las dos.
+11. **Contraste yfinance ↔ Alpaca:** las tolerancias **no se tocan** y el resultado formal sigue siendo REVISAR en 7 ETFs. Verificado en `reports/datos/verificacion_fable_20261111.md`: las diferencias son días sueltos (sobre todo marzo de 2020, cierres distintos entre proveedores que en buena parte se deshacen al día siguiente), no una deriva del ajuste; quitando los 5 peores días la correlación es ≥ 0,9995 en todos, y las señales de las tres candidatas de ETFs coinciden casi por completo entre fuentes en el tramo IS común. Decisión: **no bloquea**; la fuente sigue siendo yfinance. Queda como riesgo de divergencia backtest ↔ paper.
+12. **Corte rápido (prompt 03, fase B.1):** si en IS la expectancy con costes es ≤ 0, la candidata se descarta sin más pruebas. Es un filtro añadido (endurece).
