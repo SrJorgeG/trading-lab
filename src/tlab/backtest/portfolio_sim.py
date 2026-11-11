@@ -39,6 +39,7 @@ class SimConfig:
         default_factory=lambda: {"equity": CostModel(), "crypto": CostModel()}
     )
     entry_delay: int = 0  # velas extra de retraso (prueba de robustez)
+    max_position_fraction: float | None = None  # tope por posición (equity/3); None = sin tope
 
 
 @dataclass
@@ -179,6 +180,7 @@ def simulate(
                     cfg.max_gross_exposure,
                     ac[s],
                     cfg.allow_fractional,
+                    cfg.max_position_fraction,
                 )
                 if qty <= 0:
                     continue

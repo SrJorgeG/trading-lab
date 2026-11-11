@@ -8,6 +8,7 @@ risk_per_trade = 0.01
 max_positions = 3
 max_gross_exposure = 1.0        # sin apalancamiento
 kill_switch_drawdown = 0.10
+max_position_fraction = 0.3333  # tope por posición: coste <= equity/3 (hipotesis.md §2)
 
 [costs.equity]
 commission_per_share = 0.0
@@ -15,7 +16,7 @@ slippage_bps = 5                # por lado; ETFs muy líquidos
 
 [costs.crypto]
 fee_rate = 0.0025               # taker tramo 1 de Alpaca, por lado
-slippage_bps = 10
+slippage_bps = 20               # subido de 10 a 20 pb (hipotesis.md §3: LTC/BCH menos líquidas)
 
 [costs.stress]
 multiplier = 2.0
@@ -32,5 +33,6 @@ wf_windows = 5
 
 [universe]
 equity = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "GLD", "BIL", "SHY",
-          "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY"]
-crypto = ["BTC/USD", "ETH/USD"]
+          "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY",
+          "DBC", "VNQ", "DIA"]
+crypto = ["BTC/USD", "ETH/USD", "LTC/USD", "BCH/USD"]

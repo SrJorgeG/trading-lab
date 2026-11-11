@@ -58,14 +58,19 @@ def apply_limits(
     max_gross_exposure: float,
     asset_class: str = "equity",
     allow_fractional: bool = False,
+    max_position_fraction: float | None = None,
 ) -> float:
-    """Recorta la cantidad para respetar: máx. posiciones, exposición bruta <= límite × equity
-    y caja disponible (incluida la comisión). Devuelve la cantidad final (puede ser 0)."""
+    """Recorta la cantidad para respetar: máx. posiciones, exposición bruta <= límite × equity,
+    caja disponible (incluida la comisión) y, si se indica, coste de la posición (con slippage y
+    comisión de entrada) <= `max_position_fraction` × equity (tope equity/3 de hipotesis.md §2).
+    Devuelve la cantidad final (puede ser 0)."""
     if n_open >= max_positions or qty <= 0:
         return 0.0
     fill = costs.fill_price(price, "buy")
     unit_cost = fill + costs.commission(1, fill)
     room = min(cash, max_gross_exposure * equity - gross_exposure)
+    if max_position_fraction is not None:
+        room = min(room, max_position_fraction * equity)
     if room <= 0:
         return 0.0
     qty = min(qty, room / unit_cost)
