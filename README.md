@@ -42,6 +42,7 @@ Informes ya en `main` (el código del motor sigue en la rama [`prep/motor-backte
 | [`docs/estrategias.md`](docs/estrategias.md) | Informe de 15–20 estrategias (paso 1) |
 | [`docs/research-mercado-nov-2026.md`](docs/research-mercado-nov-2026.md) | Research de mercado, Jiang, Fang y Trump (nov 2026) |
 | [`docs/VERIFICACIONES.md`](docs/VERIFICACIONES.md) | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) |
+| [`docs/research-llm-trading.md`](docs/research-llm-trading.md) | Qué dice la evidencia sobre LLMs operando, errores típicos de bots y encargos para Fable |
 
 Los CSV y resúmenes de las corridas de referencia están en `reports/`.
 
