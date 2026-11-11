@@ -61,3 +61,60 @@ ninguna toca fechas OOS):
       `reports/datos/verificacion_fable_20261111.md`). No cambiar las tolerancias.
 - [x] Tarea 2 de la lista anterior (contraste yfinance ↔ Alpaca): ejecutado
       (`reports/datos/contraste_20261111-1555.md`), investigado y verificado por Fable.
+
+## Ronda 2 (2026-11-11) — implementar H5–H7 de `docs/hipotesis_ronda2.md`
+
+Lee antes `CLAUDE.md` («Enmiendas») y `docs/hipotesis_ronda2.md` entero. Si algo choca, **para y
+pregunta**.
+
+**Prohibido:** ejecutar cualquier backtest de `sector_mom`, `tom_etf` o `sector_lowvol` con datos
+reales (ni IS, ni réplica, ni tramos reservados, ni "solo para probar que arranca"). Solo tests
+con datos sintéticos o `tests/fixtures/`. Tampoco calcular rentabilidades de los símbolos nuevos
+al verificar datos (solo fechas, huecos y duplicados). No cambiar parámetros, universos, fechas ni
+criterios. Sin `git push`.
+
+- [ ] R2-1. **Kill switch al 15 %** (decisión de Jorge, regla dura 6): `config/settings.toml`
+      (`kill_switch_drawdown = 0.15`), valores por defecto en `risk.check_kill_switch`,
+      `portfolio_sim.SimConfig`, `robustness.kill_switch_episodes`, `montecarlo.DEFAULT_KILL` y
+      `targets.py`; textos de `README.md` y de `prompts/01`, `02` y `05`. Los tests que pasan
+      `0.10` como argumento explícito no se tocan. Los informes de la ronda 1 **no** se regeneran.
+- [ ] R2-2. `robustness.calibrate_risk`: el límite sale del TOML de la estrategia
+      (`calibration_dd_limit`, 0.12 en la ronda 2); las candidatas de la ronda 1 conservan 0.10.
+- [ ] R2-3. **Datos:** añadir a `settings.toml` y descargar con yfinance (ajustado) desde
+      1998-12-01: `XLB XLE XLF XLI XLK XLP XLU XLV XLY`, `EWJ EWG EWU EWC EWQ EWI EWA EWL EWH`,
+      `MDY`; y bajar la historia de `SPY`, `IWM`, `EFA`, `EEM`, `IEF` desde su primera vela.
+      Pasar `data/validate.py`. Escribir en `reports/datos/` una tabla con primera y última vela,
+      nº de velas, huecos y fecha en la que cada símbolo llega a 365 velas. Comprobar con Alpaca
+      (`get_asset`) que todos son operables. Aplicar la regla de §3.1 si algo no existe (retrasar
+      el inicio / quitar el símbolo de la réplica) y **anotarlo para Fable, no decidirlo**.
+- [ ] R2-4. **Caja:** serie diaria del tipo de las letras a 3 meses (`^IRX` en yfinance, en % anual)
+      y benchmark "caja" = capital × ∏(1 + tipo/100)^(1/252). Si `^IRX` no está o tiene huecos
+      largos, alternativa: el CSV público `DTB3` de FRED (sin clave). Documentar cuál se usa. Test
+      con una serie constante del 5 % → CAGR 5 %.
+- [ ] R2-5. **Tramos múltiples** en el TOML y en `scripts/backtest.py`: `is`, `replica`,
+      `holdout_old` (2000-07-01 → 2007-06-30), `holdout_new` (2021-01-01 → 2026-10-31), `full`
+      (2000-07-01 → 2026-10-31), cada uno con su universo y su `slippage_bps` (5 / 15 / 10 / 5 /
+      el del tramo que toque en `full`: 10 hasta 2007-06-30 y 5 después). Guarda de un solo uso
+      por (estrategia, tramo, hash de parámetros) en `reports/oos_log.csv`, con columnas nuevas
+      `tranche`, `costs`, `entry_delay` (cubre la tarea pendiente del paso 3). Orden obligado:
+      `replica` → `holdout_old` → `holdout_new` → `full`; el script se niega a saltarse uno.
+- [ ] R2-6. **Señales de panel** (§6.1): tipo `generate_signals_panel`, registro aparte, integración
+      en `runner` y en los tests de look-ahead. Test: en una misma apertura las salidas liberan
+      hueco antes que las entradas.
+- [ ] R2-7. Estrategias `sector_mom` y `sector_lowvol` (§6.2) con los casos S1–S4 como tests; dos
+      TOML con `status = "preregistrada"`.
+- [ ] R2-8. Estrategia `tom_etf` (§6.3): calendario inyectado en `params["sessions"]`, casos C1–C4,
+      TOML. Para el modo en vivo, función que construya el calendario con `get_calendar`.
+- [ ] R2-9. **Monos a medida** (§3.4) en `random_benchmark.py`: modo `rank` (sortea el orden de los
+      aptos en cada revisión) y modo `window` (sortea la sesión de entrada de cada mes; salida 4
+      sesiones después). Semilla 42, 1.000. Test de reproducibilidad.
+- [ ] R2-10. **Informe:** relación CAGR/|caída| de estrategia, SPY y 60/40; CAGR de caja e `IEF`;
+      CAGR conjunto de los dos tramos reservados (fórmula del criterio 16a); criterio 16d sobre el
+      trozo de `full` desde 2002-08-01; subperiodos del criterio 11; episodios de kill switch al
+      15 %; variante informativa "efectivo rindiendo como la caja"; peor año y peor racha.
+- [ ] R2-11. **Banda para el paper** (§3.6 b): remuestreo por bloques de 21 sesiones, 10.000
+      trayectorias, semilla 42, percentiles 5/50/95 a 6 y 12 meses. Solo la herramienta y su test.
+- [ ] R2-12. Cartera combinada de §5.4 (sectores con 2 huecos + `tom_etf` con 1 hueco en `SPY`):
+      solo dejar preparado el modo y un test sintético; no ejecutarlo.
+- [ ] R2-13. `ruff` y `pytest` en verde; informe corto `docs/INFORME_RONDA2_IMPL.md` con dudas de
+      interpretación para Fable (como `INFORME_PASO2.md`).
