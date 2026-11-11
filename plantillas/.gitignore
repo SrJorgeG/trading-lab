@@ -1,0 +1,23 @@
+# Secretos
+.env
+.env.*
+!.env.example
+*.key
+
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Datos e informes pesados (se regeneran)
+data_cache/
+reports/**/*.html
+reports/**/*.parquet
+
+# Estado local del ejecutor
+state/
+logs/
+KILL_SWITCH
