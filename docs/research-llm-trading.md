@@ -1,0 +1,63 @@
+# LLMs que operan: evidencia y lecciones para el lab
+
+Informe educativo (no es asesoramiento financiero) para Jorge, a 11 de noviembre de 2026, hora de Madrid. Sobre modelos de lenguaje (LLM, *large language models*: sistemas de IA que leen y escriben texto) en trading, y qué implica para nuestro plan: el LLM diseña reglas y un Python sin IA las ejecuta. Cada cifra sale de una fuente citada.
+
+Hay que separar dos usos. Uno es el LLM como **lector de texto** (puntuar si un titular es bueno o malo para una acción). Otro es dejarlo **decidir operaciones** como un agente autónomo. El primero tiene resultados más serios; el segundo suele decepcionar cuando se mide bien.
+
+## 1. Qué dice la evidencia
+
+**Lopez-Lira y Tang** (arXiv:2304.07619, agosto 2026) hacen lo primero, y bien: evalúan GPT-4 (`gpt-4-0314`, entrenamiento hasta septiembre de 2021) con titulares **posteriores** a esa fecha (octubre 2021–diciembre 2023). Una cartera que compra las acciones con titular positivo y vende las de titular negativo gana, **antes de costes**, 38 puntos básicos al día (1 pb = 0,01 %), unos 650 % acumulados, un Sharpe anualizado de 3,28 y un *drawdown* máximo (caída desde máximos) del −17,42 %. El grueso viene del lado corto (29 pb/día frente a 9 pb en el largo). Con 5 pb de coste por ida y vuelta la acumulada sigue por encima del 300 %; con 10 pb, sobre el 150 %; con 20 pb, **deja de ser rentable**. El Sharpe cae con el tiempo (6,54 en el 4T de 2021, 3,68 en 2022, 2,33 en 2023). Un LLM puede extraer señal de texto fuera de su corte de conocimiento, pero un sistema de alto *turnover* (muchas operaciones) muere cuando los costes son realistas.
+
+**Alpha Arena, temporada 1** (Nof1, dinero real). Seis modelos recibieron 10.000 $ cada uno para operar perpetuos de cripto en Hyperliquid, con el mismo *prompt*, solo datos numéricos y sin intervención humana, del 18 de octubre al 3 de noviembre de 2025. Según Protos (4 nov 2025): Qwen3-Max terminó con 12.232 $ (+22,32 %); DeepSeek V3.1, +489 $; Claude Sonnet 4.5, −3.081 $; Grok 4, −4.531 $; Gemini 2.5 Pro, −5.671 $; GPT-5, −6.267 $ (unas −63 %). El acierto por operación estuvo entre el 25 % y el 30 %. Gemini hizo 238 operaciones; Claude, 38. Qwen pagó 1.654 $ en comisiones; Gemini, 1.331 $. Nof1 escribió que, en las pruebas previas, «el PnL lo dominaban los costes de trading porque los agentes sobreoperaban y tomaban ganancias rápidas y minúsculas que las comisiones borraban». La ventana es demasiado corta para distinguir habilidad de suerte.
+
+**StockBench** (Chen et al., [stockbench.github.io](https://stockbench.github.io/)): las 20 acciones de más peso del Dow, del 3 de marzo al 30 de junio de 2025 (82 sesiones, 100.000 $), en una prueba pensada para evitar contaminación. La mayoría no supera de forma clara al *buy and hold* (comprar y mantener: +0,4 %, drawdown −15,2 %). El mejor clasificado, Kimi-K2, hizo +1,9 % con un drawdown del −11,8 %. GPT-5 se quedó en +0,3 %.
+
+**InvestorBench** (Li et al., ACL 2025, arXiv:2412.18174) prueba 13 LLM. En siete acciones, Qwen2.5-72B promedió un 46,15 % acumulado y un Sharpe de 1,276, frente al 34,10 % y 0,732 del *buy and hold*; en bitcoin, GPT-o1-preview hizo 34,06 % frente al 21,82 % de mantener. **Ojo:** la ventana de acciones (octubre 2020–mayo 2021) y la de ETF (2020) caen dentro del conocimiento de muchos modelos.
+
+**Profit Mirage** (Li et al., arXiv:2510.07920, octubre 2025) mide esa contaminación. Con GPT-4o (corte en octubre de 2023), comparan un periodo previo (2T–3T 2021, mercado +13,79 %) con uno posterior comparable (3T–4T 2024, +13,35 %). La rentabilidad total de FinMem cae un 71,85 %; el Sharpe de QuantAgent, un 51,48 %; el de FinCon, un 62,23 %. En pruebas contrafactuales, FinMem dejó igual el 82,13 % de sus predicciones aunque se cambiaran los datos. En 2.000 preguntas históricas, los modelos acertaron entre un 85 % y un 93 %. Su propuesta, FactFin, usa el LLM para **generar código de estrategia**, no para pulsar el botón cada día.
+
+**FINSABER** (Li, Kim, Cucuringu y Ma, arXiv:2505.07078, 2025) alarga la lupa a dos décadas y más de 100 símbolos del S&P 500, incluidos los delistados, para no caer en el *sesgo de supervivencia* (probar solo empresas que siguen vivas). Las ventajas de FinMem y FinAgent, publicadas en ventanas cortas y en cuatro acciones famosas, se desinflan: en evaluaciones justas no baten al *buy and hold* en métricas ajustadas al riesgo y no generan *alpha* (rentabilidad extra) distinta de cero. Fallan de forma sistemática: demasiado conservadores en alcistas y demasiado agresivos en bajistas (Sharpe de FinMem: −0,19 y −0,97; FinAgent: 0,12 y −0,38). FinMem pagó entre 5 y 9 veces más comisiones que FinAgent. El coste de API de un solo montaje fue de 198,24 $ (FinAgent) y 31,79 $ (FinMem con GPT-4o-mini); el conjunto, unos 700 $.
+
+**FinBen** (Xie et al., NeurIPS 2024, arXiv:2402.12659): 36 conjuntos y 24 tareas. Los LLM rinden bien en extracción de información y análisis de texto; fallan más en razonamiento avanzado y **pronóstico**.
+
+**LiveTradeBench** (Yu, Li y You, arXiv:2511.03628, noviembre 2025): 21 modelos, 50 días en vivo (18 ago–24 oct 2025) en acciones de EE. UU. y en Polymarket. Los autores avisan de que **no modelan comisiones ni slippage** (la diferencia entre el precio teórico y el de ejecución). La correlación entre la nota general del modelo (LMArena) y el resultado en acciones es 0,054; en Polymarket, −0,38. Ser un LLM «bueno» no implica saber operar. GPT-4.1 lideró acciones (6,25 %, Sharpe 2,64) y perdió un 33,69 % en Polymarket; Claude Sonnet 3.7 fue el mejor ahí (20,54 %, Sharpe 2,38). Lo que funciona en un mercado no se traslada al otro.
+
+**Fallos que se repiten:** sobreoperar hasta que las comisiones se comen el PnL; ignorar el régimen y las reglas de riesgo; alucinar o recitar historia memorizada; *look-ahead* (usar información del futuro) no solo por un `shift` mal puesto, sino porque el preentrenamiento ya contiene el desenlace; dimensionar por la «confianza» del modelo (está mal calibrada); costes de API ausentes del Sharpe; ventanas cortas indistinguibles de la suerte.
+
+## 2. Lecciones para nuestro diseño
+
+El plan del lab es el sensato. Lopez-Lira acierta cuando el LLM lee texto *después* de su corte de conocimiento. Profit Mirage y FactFin llegan a la misma arquitectura que ya está en `CLAUDE.md`: el LLM propone reglas, el Python las ejecuta. FINSABER, StockBench y LiveTradeBench muestran que un agente que decide cada día rara vez supera a comprar y mantener cuando se controlan sesgos, costes y contaminación. Alpha Arena añade la prueba en vivo: con apalancamiento, comisiones reales y libertad para girar la cartera, la mayoría acabó en pérdidas.
+
+**Cómo validar una estrategia diseñada por un LLM sin contaminarla.** Aquí la estrategia *es* un conjunto de reglas en Python, así que el look-ahead clásico (indicadores con datos futuros, precios no ajustados, universo de supervivientes) sigue siendo el riesgo principal, y el kit ya lo ataca: ejecución a la apertura de la vela siguiente, walk-forward, OOS de un solo uso, registro de variantes. Hay un sesgo extra: Fable puede «recordar» backtests famosos o parámetros de su entrenamiento. Antídoto: pre-registrar hipótesis y umbrales *antes* de ver resultados; no reajustar el OOS si falla; no celebrar ventanas cortas; y, si algún día se evaluara al propio LLM como decisor, hacerlo solo en datos posteriores a su corte y, después, en *paper trading* (cuenta simulada en el broker) hacia adelante. El paper no sustituye al backtest, pero es el único test que el modelo no puede haber memorizado.
+
+**Si un LLM llegara a decidir en vivo** (hoy lo prohíben las reglas duras), la capa de riesgo en Python manda: 1 % por operación, stop obligatorio, máximo 3 posiciones, sin apalancamiento ni cortos, *kill switch* al −10 %. Nunca dimensionar por la confianza del modelo. Órdenes con identificador idempotente (un reintento no debe duplicar). Si faltan datos o el modelo inventa un precio, no se opera. Registrar todo. Horarios en UTC. Contar el coste de API. Seguir en paper, y en tamaño mínimo, mucho tiempo.
+
+## 3. Diez errores típicos de quien empieza
+
+1. **Creer que el paper es el live.** En paper los *fills* son limpios; en real hay slippage, ejecuciones parciales y psicología (el miedo a perder dinero de verdad). Mitigación: costes pesimistas del kit (5–15 pb en acciones, comisión cripto + 10 pb) y comparar fills y PnL del paper con el backtest.
+2. **Sobreajuste (*overfitting*).** Ajustar parámetros hasta que el pasado «encaja». Mitigación: presupuesto de variantes, `docs/registro_pruebas.md`, robustez ±25 % y un OOS fallido mata la idea (prompts 01 y 03).
+3. ***Data snooping*** (probar mil ideas en los mismos datos). Mitigación: Bailey et al. (2015); una sola pasada OOS, pre-registrada.
+4. **Look-ahead y contaminación del entrenamiento.** Mitigación: auditoría del motor en el prompt 03 (nada de `shift(-1)`); no copiar parámetros «porque en un paper funcionaron» sin tratarlos como sospechosos.
+5. **Sesgo de supervivencia.** Mitigación: el kit prioriza universos de ETF; si hay acciones sueltas, justificar cómo se evitan solo las que siguen cotizando.
+6. **Ignorar comisiones, slippage e impuestos.** Lopez-Lira: a 20 pb la estrategia de titulares deja de pagar. Mitigación: estrés de costes × 2 en la checklist; los impuestos en España se mirarán más adelante, pero no se olvidan en el veredicto.
+7. **No tener kill switch.** Mitigación: ya está en `CLAUDE.md` (caída > 10 % desde el máximo del experimento, archivo `KILL_SWITCH`).
+8. **Errores de API y órdenes duplicadas.** Un reintento tras un timeout puede abrir dos veces. Mitigación: *client order id* idempotente y conciliar broker y estado local (prompt 05).
+9. **Bugs de zona horaria.** EE. UU. vive en hora del Este; Madrid, en UTC+1 (UTC+2 en verano); cripto opera 24/7. Mitigación: timestamps en UTC y documentar a qué hora se lanza el script diario.
+10. **Sobreoperar y no tener tesis económica.** Mitigación: baja frecuencia por diseño; en el prompt 01, cada candidata necesita una razón de por qué podría funcionar (quién pierde el dinero que tú ganas, o qué prima de riesgo cobras).
+
+## 4. Para mañana (prompts 01 y 03)
+
+1. **Prompt 01.** Dejar explícito que se descartan estrategias en las que un LLM decida comprar o vender cada día. Solo reglas escritas, ejecutadas por Python. Motivo: Alpha Arena (sobreoperación y comisiones en vivo) y Profit Mirage (la «alpha» de muchos agentes se evapora tras el corte de conocimiento).
+2. **Prompt 01.** Favorecer bajo turnover. Un borde que exige girar la cartera a diario es frágil con costes reales (Lopez-Lira a 20 pb; comisiones de Alpha Arena). Cruzar el nº estimado de operaciones de cada candidata con los costes del kit, incluido el escenario × 2.
+3. **Prompt 01.** Pre-registrar fechas OOS y la checklist de aceptación *antes* de ver un solo número. Si se elige una regla clásica (medias, momentum, RSI…), tratar los resultados publicados como potencialmente memorizados. El antídoto es el OOS de un solo uso, el walk-forward y «si falla el OOS, muere». Seguir priorizando ETF para no inflar resultados con supervivientes.
+4. **Prompt 03.** Además de la auditoría técnica del motor (vela siguiente, stops con *gap*, costes, sizing), hacerse esta pregunta: «¿habríamos escrito esta regla igual sin conocer cómo acabó el mercado después de 2016?». Comparar siempre con *buy and hold* en el mismo periodo. No celebrar cuatro meses de suerte.
+5. **Prompt 03.** En «lo que el backtest no modela», citar fills parciales, psicología, impuestos y liquidez. El paper prueba código y disciplina de reglas, no el estómago en live. No suavizar umbrales para que algo apruebe. Un «ninguna pasa» bien argumentado es un buen resultado.
+
+## Fuentes
+
+- Lopez-Lira y Tang, [arXiv:2304.07619](https://arxiv.org/abs/2304.07619) (v5 / HTML, agosto 2026).
+- Nof1, [alphaarena.ai/blog/TechPost1](https://www.alphaarena.ai/blog/TechPost1); Protos, 4 nov 2025, [protos.com](https://protos.com/llm-crypto-trading-contest-finds-llms-cant-trade-crypto/).
+- Chen et al., StockBench, [stockbench.github.io](https://stockbench.github.io/) y arXiv:2510.02209.
+- Li et al., InvestorBench, [arXiv:2412.18174](https://arxiv.org/abs/2412.18174); FinBen, [arXiv:2402.12659](https://arxiv.org/abs/2402.12659); FINSABER, [arXiv:2505.07078](https://arxiv.org/abs/2505.07078); Profit Mirage, [arXiv:2510.07920](https://arxiv.org/abs/2510.07920).
+- Yu, Li y You, LiveTradeBench, [arXiv:2511.03628](https://arxiv.org/abs/2511.03628).
+- Bailey et al., *The Probability of Backtest Overfitting*, 2015; Chan, *Quantitative Trading*, 2021 (ambos citados por FINSABER).
