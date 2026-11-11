@@ -21,8 +21,11 @@ def simulate_weights(
     initial_equity: float = 10_000.0,
     start=None,
     fractional: bool = True,
+    always_rebalance: bool = False,
 ) -> tuple[pd.Series, pd.DataFrame]:
-    """Devuelve (equity diaria, operaciones). `weights` indexado por la vela de decisión."""
+    """Devuelve (equity diaria, operaciones). `weights` indexado por la vela de decisión.
+    `always_rebalance=True`: vuelve a los pesos objetivo en CADA decisión aunque no cambien
+    (benchmarks con rebalanceo mensual, p. ej. 60/40)."""
     syms = list(weights.columns)
     opens = pd.DataFrame({s: bars[s]["open"] for s in syms})
     closes = pd.DataFrame({s: bars[s]["close"] for s in syms})
@@ -43,7 +46,7 @@ def simulate_weights(
     for t in idx:
         if t in exec_map:
             w = exec_map[t].fillna(0.0)
-            if cur_w is None or not np.allclose(w.values, cur_w.values):
+            if always_rebalance or cur_w is None or not np.allclose(w.values, cur_w.values):
                 px_o = opens.loc[t]
                 if px_o[w[w > 0].index].isna().any():
                     pass  # algún activo sin vela hoy: se espera al siguiente rebalanceo

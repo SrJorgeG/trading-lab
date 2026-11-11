@@ -24,7 +24,7 @@ from tlab import metrics
 from tlab.backtest.allocation_sim import simulate_weights
 from tlab.backtest.costs import CostModel, cost_models
 from tlab.backtest.portfolio_sim import SimConfig, SimResult, simulate
-from tlab.backtest.runner import OOSGuardError, periods_per_year
+from tlab.backtest.runner import OOSGuardError, asset_entry_dates, periods_per_year
 from tlab.config import ROOT, asset_class_of, load_settings, load_strategy_config
 from tlab.strategies import ALLOCATION_STRATEGIES, SIGNAL_STRATEGIES
 
@@ -75,6 +75,8 @@ class Target:
     costs_mode: str = "base"
     label: str = ""
     meta: dict = field(default_factory=dict)
+    # Candidatas: primera fecha en la que cada activo entra al universo (>= 365 velas).
+    entry_from: dict = field(default_factory=dict)
 
     # ------------------------------------------------------------------ identificación
     @property
@@ -101,6 +103,7 @@ class Target:
                 "gross": self.cfg.max_gross_exposure,
                 "kill": self.cfg.kill_switch_drawdown,
                 "frac": self.cfg.allow_fractional,
+                "cap": self.cfg.max_position_fraction,
                 "costs": {k: repr(v) for k, v in sorted(self.cfg.costs.items())},
             },
             "data": {
@@ -121,7 +124,10 @@ class Target:
 
     def sliced_bars(self, period: str) -> dict[str, pd.DataFrame]:
         a, b = self.window(period)
-        out = {s: df[(df.index >= a) & (df.index <= b)] for s, df in self.bars.items()}
+        out = {}
+        for s, df in self.bars.items():
+            lo = max(a, self.entry_from[s]) if s in self.entry_from else a
+            out[s] = df[(df.index >= lo) & (df.index <= b)]
         return {s: df for s, df in out.items() if len(df)}
 
     def signals(self, params: dict) -> dict[str, pd.DataFrame]:
@@ -149,7 +155,7 @@ class Target:
     def run_with_signals(self, sigs: dict[str, pd.DataFrame], period: str) -> RunOutput:
         a, b = self.window(period)
         bb = self.sliced_bars(period)
-        ss = {s: sigs[s][(sigs[s].index >= a) & (sigs[s].index <= b)] for s in bb}
+        ss = {s: sigs[s][(sigs[s].index >= bb[s].index[0]) & (sigs[s].index <= b)] for s in bb}
         r: SimResult = simulate(bb, ss, self.cfg)
         return RunOutput(r.equity, r.trades, r.exposure, r.kill_switch_date)
 
@@ -238,11 +244,21 @@ def extract_metrics(run: RunOutput, ppy: int, bars: dict | None = None) -> dict:
 
 
 def _bounds(
-    bars: dict[str, pd.DataFrame], settings: dict, is_end: str | None, start: str | None
+    bars: dict[str, pd.DataFrame],
+    settings: dict,
+    is_end: str | None,
+    start: str | None,
+    exact_start: bool = False,
 ) -> dict[str, tuple[pd.Timestamp, pd.Timestamp]]:
+    """`exact_start` (candidatas): el periodo empieza en `start` y cada activo entra cuando
+    tiene historia suficiente, en vez de esperar al activo más joven."""
     first = max(df.index[0] for df in bars.values()) + pd.Timedelta(days=365)
     if start is not None:
-        first = max(first, pd.Timestamp(start, tz="UTC"))
+        first = (
+            pd.Timestamp(start, tz="UTC")
+            if exact_start
+            else max(first, pd.Timestamp(start, tz="UTC"))
+        )
     last = min(df.index[-1] for df in bars.values())
     split = (
         pd.Timestamp(is_end, tz="UTC")
@@ -274,6 +290,7 @@ def build_target(
     ``data`` permite pasar velas ya cargadas (tests); si no, se leen de la caché de datos.
     """
     s = settings or load_settings()
+    sc: dict = {}
     if strategy in SIGNAL_STRATEGIES:
         kind = "signals"
         sc = strat_cfg if strat_cfg is not None else load_strategy_config(strategy)
@@ -294,7 +311,7 @@ def build_target(
     if data is None:
         from tlab.data.loader import load_bars, pick_source
 
-        src = pick_source(s["data"]["source"])
+        src = pick_source(sc.get("data_source", s["data"]["source"]))
         data = load_bars(
             uni,
             "1Day",
@@ -306,11 +323,23 @@ def build_target(
     else:
         data_src = "datos pasados por el llamador"
     bars = {u: data[u] for u in uni}
+    if "end" in sc:  # nada posterior al fin de datos pre-registrado
+        end_ts = pd.Timestamp(sc["end"], tz="UTC")
+        bars = {u: df[df.index <= end_ts] for u, df in bars.items()}
+    exact = kind == "signals" and "start" in sc and start is None
+    if exact:
+        start = sc["start"]
+    entry_from = (
+        asset_entry_dates(bars, int(sc["min_history_bars"]))
+        if exact and "min_history_bars" in sc
+        else {}
+    )
     costs: dict[str, CostModel] = cost_models(s, costs_mode)
     r = s["risk"]
     cfg = SimConfig(
         initial_equity=s["capital"]["virtual_equity_usd"],
-        risk_per_trade=r["risk_per_trade"],
+        risk_per_trade=sc.get("risk_per_trade", r["risk_per_trade"]),
+        max_position_fraction=r.get("max_position_fraction"),
         max_positions=r["max_positions"],
         max_gross_exposure=r["max_gross_exposure"],
         kill_switch_drawdown=r["kill_switch_drawdown"] if kill_switch else None,
@@ -327,10 +356,11 @@ def build_target(
         bars=bars,
         params=p,
         cfg=cfg,
-        bounds=_bounds(bars, s, is_end, start),
+        bounds=_bounds(bars, s, is_end, start, exact_start=exact),
         ppy=ppy,
         kill_switch=kill_switch,
         costs_mode=costs_mode,
         label=label,
         meta={"data_source": data_src, "kill_threshold": r["kill_switch_drawdown"]},
+        entry_from=entry_from,
     )
