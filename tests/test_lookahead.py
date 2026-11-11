@@ -7,7 +7,22 @@ from conftest import make_bars
 
 from tlab.strategies import ALLOCATION_STRATEGIES, SIGNAL_STRATEGIES
 
-SIG_PARAMS = {"demo_sma": {"fast": 10, "slow": 30}, "donchian_atr": {}}
+SIG_PARAMS = {
+    "demo_sma": {"fast": 10, "slow": 30},
+    "donchian_atr": {},
+    # Candidatas con sus parámetros por defecto (hipotesis.md §2).
+    "donchian_crypto": {"entry_n": 55, "exit_n": 20, "atr_mult": 2.0, "atr_n": 20},
+    "donchian_etf": {"entry_n": 55, "exit_n": 20, "atr_mult": 2.0, "atr_n": 20},
+    "tsmom_etf": {"lookback": 252, "atr_mult": 4.0, "atr_n": 20},
+    "rsi2_etf": {
+        "rsi_n": 2,
+        "rsi_entry": 10.0,
+        "trend_n": 200,
+        "exit_sma_n": 5,
+        "atr_mult": 3.0,
+        "atr_n": 20,
+    },
+}
 CUTS = [150, 300, 451, 599]
 
 

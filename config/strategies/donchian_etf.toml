@@ -1,0 +1,29 @@
+# H4 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.1 (H4)). No cambiar sin re-registrar.
+id = "donchian_etf"
+kind = "signals"
+status = "preregistrada"
+universe = ["SPY", "EFA", "EEM", "IEF", "GLD", "DBC", "VNQ"]
+benchmark = "SPY"
+benchmark_info = { SPY = 0.6, IEF = 0.4 }   # 60/40 con rebalanceo mensual (informativo)
+robust_keys = ["entry_n", "exit_n", "atr_mult"]
+start = "2007-07-01"
+is_end = "2020-12-31"
+end = "2026-10-31"
+data_source = "yfinance"      # historia larga (§0): Alpaca solo sirve para contrastar
+min_history_bars = 365          # cada activo entra al universo cuando tiene >= 365 velas
+risk_per_trade = 0.01           # se calibra en IS (1,0 / 0,75 / 0,5 %) y se congela (P1)
+risk_levels = [0.01, 0.0075, 0.005]
+kill_switch_in_backtest = false # P1: métricas sin kill switch; se cuentan los episodios aparte
+subperiods = [["2007-07-01", "2013-12-31"], ["2014-01-01", "2020-06-30"], ["2020-07-01", "2026-10-31"]]
+
+[walkforward]                   # §3: entrenamiento creciente desde `start`, ventanas fijas
+first_test = "2013-01-01"
+test_months = 12
+n_windows = 8
+min_valid_windows = 5
+
+[params]
+entry_n = 55
+exit_n = 20
+atr_mult = 2.0
+atr_n = 20
