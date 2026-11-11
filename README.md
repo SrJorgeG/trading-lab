@@ -30,6 +30,23 @@ Kit listo para usar en **jorge-cachy** con Claude Code. Objetivo de la semana:
 
 ---
 
+## Informes
+
+Informes ya en `main` (el código del motor sigue en la rama [`prep/motor-backtest`](https://github.com/SrJorgeG/trading-lab/tree/prep/motor-backtest), sin fusionar):
+
+| Informe | Qué es |
+|---|---|
+| [`docs/INFORME_MOTOR_Y_BASELINES.md`](docs/INFORME_MOTOR_Y_BASELINES.md) | Resumen en claro: qué hace el motor, tabla de referencia y las 3 decisiones para Fable |
+| [`docs/baselines.md`](docs/baselines.md) | Resultados de referencia completos (CAGR, drawdown, Sharpe, costes ×2) |
+| [`docs/PREP_NOTES.md`](docs/PREP_NOTES.md) | Notas técnicas del motor, limitaciones y preguntas para Fable |
+| [`docs/estrategias.md`](docs/estrategias.md) | Informe de 15–20 estrategias (paso 1) |
+| [`docs/research-mercado-nov-2026.md`](docs/research-mercado-nov-2026.md) | Research de mercado, Jiang, Fang y Trump (nov 2026) |
+| [`docs/VERIFICACIONES.md`](docs/VERIFICACIONES.md) | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) |
+
+Los CSV y resúmenes de las corridas de referencia están en `reports/`.
+
+---
+
 ## Instalación (5 minutos)
 
 En jorge-cachy:
