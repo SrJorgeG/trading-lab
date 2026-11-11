@@ -72,7 +72,9 @@ def render_montecarlo_tab(st, run_dir: Path | None = None) -> None:
         st.info("Elige parámetros y pulsa Simular. Con N=5000 tarda unos segundos.")
         return
     equity, trades, meta = load_run(folder)
-    cfg = MCConfig(n=int(n), seed=int(seed), method=method, block_length=int(block))
+    cfg = MCConfig(
+        n=int(n), seed=int(seed), method=method, block_length=int(block), keep_paths=True
+    )
     try:
         result = run_montecarlo(equity, trades, cfg)
     except ValueError as e:
@@ -143,9 +145,33 @@ def render_montecarlo_tab(st, run_dir: Path | None = None) -> None:
     except ImportError:
         st.write("Instala plotly para ver los gráficos.")
     st.dataframe(stats_table(result), use_container_width=True)
+    render_3d_section(st, result, cfg)
     with st.expander("Advertencias"):
         for n in result.notes:
             st.markdown(f"- {n}")
+
+
+def render_3d_section(st, result, cfg) -> None:
+    """Pestañas 3D (spaghetti, montaña de densidad, nube de resultados)."""
+    try:
+        from tlab.backtest.montecarlo3d import fig_density, fig_outcomes, fig_spaghetti
+    except ImportError:
+        return
+    st.subheader("Vista 3D")
+    st.caption("Arrastra para girar, rueda o pellizco para zoom.")
+    t1, t2, t3 = st.tabs(["🌌 Caminos", "🏔️ Montaña", "💎 Resultados"])
+    with t1:
+        f = fig_spaghetti(result)
+        f.update_layout(height=650)
+        st.plotly_chart(f, use_container_width=True)
+    with t2:
+        f = fig_density(result)
+        f.update_layout(height=650)
+        st.plotly_chart(f, use_container_width=True)
+    with t3:
+        f = fig_outcomes(result, cfg)
+        f.update_layout(height=650)
+        st.plotly_chart(f, use_container_width=True)
 
 
 def main() -> None:

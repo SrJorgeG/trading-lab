@@ -47,6 +47,7 @@ class MCConfig:
     sizing: Sizing = "additive"
     risk_frac: float = 0.01
     n_sample_paths: int = 60
+    keep_paths: bool = False  # guarda la matriz N×T completa (vistas 3D)
 
 
 @dataclass
@@ -76,6 +77,7 @@ class MCResult:
     mtm: dict[str, float] = field(default_factory=dict)
     ranks: dict[str, float] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    paths: np.ndarray | None = None
 
     @property
     def p_kill(self) -> float:
@@ -427,6 +429,7 @@ def run_montecarlo(
         mtm=mtm,
         ranks=ranks,
         notes=notes,
+        paths=paths if cfg.keep_paths else None,
     )
 
 
