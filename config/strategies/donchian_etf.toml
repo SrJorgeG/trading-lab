@@ -1,7 +1,8 @@
 # H4 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.1 (H4)). No cambiar sin re-registrar.
 id = "donchian_etf"
 kind = "signals"
-status = "preregistrada"
+status = "rechazada"
+status_reason = "Paso 3 (2026-11-11): falla el criterio 3 en OOS (Sharpe 0,62 < SPY 0,91 y CAGR 3,45 % < 50 % del de SPY). OOS gastado: no se reajusta. Ver docs/veredicto.md"
 universe = ["SPY", "EFA", "EEM", "IEF", "GLD", "DBC", "VNQ"]
 benchmark = "SPY"
 benchmark_info = { SPY = 0.6, IEF = 0.4 }   # 60/40 con rebalanceo mensual (informativo)

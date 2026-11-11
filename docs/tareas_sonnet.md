@@ -43,3 +43,21 @@ o fechas posteriores a `is_end`). Tampoco cambiar parámetros, universos, fechas
   qué hace el script si el stop no se ejecuta en un hueco.
 - El tamaño se calcula antes de la apertura con el cierre anterior; si abre más arriba, el riesgo
   real puede pasar del 1 %: recalcular con el precio visible o usar orden limitada.
+
+## Tras el paso 3 (2026-11-11) — ninguna candidata aprobada (ver `docs/veredicto.md`)
+
+No hay paso 4 que implementar. Mejoras de herramienta para la siguiente ronda (ninguna urgente,
+ninguna toca fechas OOS):
+
+- [ ] `reports/oos_log.csv`: añadir columnas `mode`, `costs` y `entry_delay` para distinguir la
+      ejecución OOS que decide de las de estrés y de la `full` (hoy solo se distinguen por el
+      registro de pruebas).
+- [ ] `--mode full` de las candidatas: añadir al informe el Monte Carlo del periodo completo
+      (criterio 10) y, en todos los modos, peor año natural y peor racha de pérdidas seguidas.
+- [ ] DSR y PBO de las candidatas a partir de las ejecuciones de la rejilla ya hechas en
+      `--mode robust` (sin barridos nuevos), contando los intentos heredados.
+- [ ] `scripts/check_alpaca_vs_yf.py`: añadir al informe la correlación sin los N peores días y
+      cuántos de los días fuera de tolerancia caen en marzo de 2020 (lo que hoy hace a mano
+      `reports/datos/verificacion_fable_20261111.md`). No cambiar las tolerancias.
+- [x] Tarea 2 de la lista anterior (contraste yfinance ↔ Alpaca): ejecutado
+      (`reports/datos/contraste_20261111-1555.md`), investigado y verificado por Fable.

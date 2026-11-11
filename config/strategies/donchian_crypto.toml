@@ -1,7 +1,8 @@
 # H1 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.1). No cambiar sin re-registrar.
 id = "donchian_crypto"
 kind = "signals"
-status = "preregistrada"
+status = "rechazada"
+status_reason = "Paso 3 (2026-11-11): muere en IS por la calibración P1: DD máx. IS -22,6 % incluso con riesgo 0,5 % (límite 10 %). OOS no ejecutado. Ver docs/veredicto.md"
 universe = ["BTC/USD", "ETH/USD", "LTC/USD", "BCH/USD"]
 benchmark = "BTC/USD"
 benchmark_info = { "BTC/USD" = 0.5 }   # 50 % BTC / 50 % caja, rebalanceo mensual (informativo)

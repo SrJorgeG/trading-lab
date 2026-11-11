@@ -1,7 +1,8 @@
 # H2 — CANDIDATA PRE-REGISTRADA (docs/hipotesis.md §2 y §6.2). No cambiar sin re-registrar.
 id = "tsmom_etf"
 kind = "signals"
-status = "preregistrada"
+status = "rechazada"
+status_reason = "Paso 3 (2026-11-11): muere en IS por el criterio 14 (indistinguible del azar, p = 0,597). OOS no ejecutado. Ver docs/veredicto.md"
 universe = ["SPY", "EFA", "EEM", "IEF", "GLD", "DBC", "VNQ"]
 benchmark = "SPY"
 benchmark_info = { SPY = 0.6, IEF = 0.4 }   # 60/40 con rebalanceo mensual (informativo)

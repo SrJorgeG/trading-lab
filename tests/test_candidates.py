@@ -302,7 +302,8 @@ EXPECTED = {
 def test_candidate_toml_matches_hipotesis(sid):
     sc = load_strategy_config(sid)
     uni, bench, start, is_end, params, grid = EXPECTED[sid]
-    assert sc["status"] == "preregistrada" and sc["id"] == sid
+    # Tras el veredicto del paso 3 el status cambia, pero lo pre-registrado no.
+    assert sc["status"] in ("preregistrada", "rechazada", "aprobada_paper") and sc["id"] == sid
     assert sc["universe"] == uni and sc["benchmark"] == bench
     assert (sc["start"], sc["is_end"], sc["end"]) == (start, is_end, "2026-10-31")
     assert sc["params"] == params
