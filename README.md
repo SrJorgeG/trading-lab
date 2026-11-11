@@ -43,8 +43,9 @@ Informes ya en `main` (el código del motor sigue en la rama [`prep/motor-backte
 | [`docs/research-mercado-nov-2026.md`](docs/research-mercado-nov-2026.md) | Research de mercado, Jiang, Fang y Trump (nov 2026) |
 | [`docs/VERIFICACIONES.md`](docs/VERIFICACIONES.md) | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) |
 | [`docs/research-llm-trading.md`](docs/research-llm-trading.md) | Qué dice la evidencia sobre LLMs operando, errores típicos de bots y encargos para Fable |
+| [`docs/MONTECARLO.md`](docs/MONTECARLO.md) | Qué es una simulación de Monte Carlo, cómo leer el abanico y las corridas de referencia (Donchian, Faber, TSMOM) |
 
-Los CSV y resúmenes de las corridas de referencia están en `reports/`.
+Los CSV y resúmenes de las corridas de referencia están en `reports/`. Los informes de Monte Carlo (md, csv, html, png) están en `reports/baselines/20261111-0141/<slug>/`.
 
 ---
 

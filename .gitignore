@@ -21,3 +21,6 @@ logs/
 reports/**/*.html
 reports/**/*.parquet
 state/
+
+# Informes Monte Carlo interactivos (se versionan a propósito)
+!reports/**/montecarlo_*.html
