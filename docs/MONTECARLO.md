@@ -104,6 +104,54 @@ uv sync --extra visor
 uv run streamlit run scripts/visor_montecarlo.py
 ```
 
+## Vista 3D (para verlo en el móvil)
+
+Un HTML interactivo con cuatro pestañas. Funciona sin internet, porque plotly.js va incrustado (pesa unos 10 MB). Se abre en el navegador del móvil o del PC: arrastra para girar, pellizca para hacer zoom, y el botón 🌀 lo pone a girar solo.
+
+| Pestaña | Qué se ve | Cómo leerlo |
+|---|---|---|
+| 🌌 Caminos | 300 simulaciones en 3D (eje X = tiempo, Y = simulación ordenada de peor a mejor, Z = equity en escala log), coloreadas de rojo (peor final) a verde (mejor). | El hilo blanco con brillo dorado es el backtest real. Si va por la zona verde, el backtest tuvo suerte; si va por el medio, fue un camino normal. |
+| 🏔️ Montaña | Superficie de densidad: en cada momento, dónde se concentran los caminos (la cresta es el nivel de dinero más probable). | La montaña se ensancha con el tiempo, porque la incertidumbre crece. Si la línea blanca del backtest va por la ladera, fue un camino poco típico. |
+| 💎 Resultados | Una nube de puntos con una simulación por punto: CAGR × peor caída × días bajo el agua, coloreados por percentil final. Lleva un plano rojo en el kill switch (−10 %). | El diamante dorado es el backtest. Lo que queda a la izquierda del plano rojo habría disparado el kill switch. |
+| ▶️ Animación | 120 caminos que crecen a la vez desde el mismo punto. | Se ve cómo se abre el abanico. Se puede girar mientras se mueve. |
+
+La cabecera trae las cifras clave sacadas de la propia simulación: CAGR y caída del backtest, rango de las simulaciones, P(kill switch), P(ruina) y P(acabar en pérdidas).
+
+```bash
+# HTML 3D (se guarda junto al backtest: montecarlo_block_3d.html)
+uv run python scripts/montecarlo_3d.py --run donchian_nokill --method block \
+    --title "Donchian 20/10 (sin kill switch)"
+uv run python scripts/montecarlo_3d.py --run tsmom_12m_1n --method block \
+    --title "TSMOM 12m 1/N (5 ETFs)"
+
+# Además, 3 PNG de preview (necesita kaleido + Chrome; kaleido ya está en el grupo dev)
+uv run python scripts/montecarlo_3d.py --run donchian_nokill --png --png-prefix /tmp/mc3d
+
+# Vídeo girando (~10 s, MP4 con ffmpeg). Tarda unos 13 min: renderiza 240 fotogramas
+uv run python scripts/montecarlo_3d.py --run donchian_nokill --spin /tmp/mc3d_spin.mp4
+
+# Con cualquier backtest nuevo de Fable (método shuffle/bootstrap si tiene trades.csv)
+uv run python scripts/montecarlo_3d.py --run <carpeta_o_id> --method shuffle
+```
+
+En el visor Streamlit (`uv run streamlit run scripts/visor_montecarlo.py`), debajo de la tabla aparece una sección **Vista 3D** con las tres primeras pestañas.
+
+HTML ya generados (ábrelos descargándolos desde GitHub; GitHub no ejecuta el HTML en la vista previa):
+
+- [Donchian sin kill switch, 3D](../reports/baselines/20261111-0141/donchian_nokill/montecarlo_block_3d.html): CAGR del backtest 9,7 %, simulaciones entre 6,0 % y 13,7 % (p5–p95); caída del backtest −12,2 % frente a una mediana de −17,3 % y −26,1 % en el p5; P(kill switch) 99,9 %.
+- [TSMOM 12m 1/N, 3D](../reports/baselines/20261111-0141/tsmom_12m_1n/montecarlo_block_3d.html): CAGR del backtest 6,3 %, simulaciones entre 3,5 % y 9,5 %; caída del backtest −15,8 % frente a una mediana de −19,1 % y −30,5 % en el p5; P(kill switch) 99,9 %; P(ruina) 2,1 %.
+
+![Caminos 3D](img/mc3d_caminos.png)
+![Montaña de densidad](img/mc3d_montana.png)
+![Nube de resultados](img/mc3d_resultados.png)
+
+Notas:
+
+- La vista 3D es la misma simulación que el abanico 2D; no añade información estadística, solo la enseña de otra forma.
+- La montaña usa la **densidad relativa**: cada instante se escala para que su cresta valga 1. Así se ve cómo se ensancha la distribución sin que el pico inicial (donde todos los caminos están en 10.000 $) aplaste el resto. La altura no se puede comparar entre fechas.
+- Para que el HTML pese poco, se pintan 300 caminos (estratificados por resultado final, siempre con el peor y el mejor) y unos 260 instantes de tiempo. Las métricas usan las 5000 simulaciones completas.
+- `MCConfig(keep_paths=True)` guarda la matriz N×T entera en memoria: con 5000 × 6900 son unos 280 MB.
+
 ## Resultados de las baselines de referencia
 
 Corridos el 11 nov 2026 (hora de Madrid) con **N = 5.000**, semilla **42**, kill switch
