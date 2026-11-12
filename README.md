@@ -1,172 +1,130 @@
-# Trading Lab Kit — Fable diseña, Sonnet ejecuta (solo PAPER)
+# trading-lab
 
-Kit listo para usar en **jorge-cachy** con Claude Code. Objetivo de la semana:
+Laboratorio educativo de **estrategias de trading basadas en reglas escritas**: backtest riguroso y, cuando toque, ejecución en **paper trading** en [Alpaca](https://alpaca.markets/). **Solo paper. Nunca dinero real.**
 
-1. **Fable** (el modelo más listo, incluido en tu plan Pro hasta el **lun 17 nov 08:59, hora de Madrid**, con un tope del 50 % del límite semanal; hace falta Claude Code **v2.1.321+**) investiga, propone y **valida con backtest** 1–2 estrategias **basadas en reglas escritas**.
-2. Las deja documentadas en un `STRATEGY.md` tan claro que luego las pueda ejecutar **Sonnet o un script de Python sin IA**.
-3. Se ejecutan a diario en **paper trading** (dinero ficticio) en **Alpaca**. **Cero dinero real.**
+Python 3.12 (`uv`, pandas, numpy, vectorbt y un simulador propio). El trabajo es conjunto con un amigo. El proyecto está **en pausa desde el 2026-11-12**: la ronda 1 cerró sin candidatas aptas; la ronda 2 está implementada en código, **sin backtests ejecutados** con datos reales, y no se opera en paper.
 
-> Aviso honesto: esto es un experimento educativo. Ningún backtest garantiza nada y una semana de paper no demuestra nada estadísticamente. Lo que sí podemos conseguir esta semana: un sistema bien hecho, reglas claras y un historial que vaya creciendo.
-
-> **Rama `prep/motor-backtest`:** el motor del paso 2 (datos, simulador, métricas, 66 tests) y unos
-> baselines de referencia ya están hechos ahí, sin gastar cupo de Claude. Léete
-> [`docs/PREP_NOTES.md`](docs/PREP_NOTES.md) y [`docs/baselines.md`](docs/baselines.md) antes del paso 1.
-> También hay un módulo de Monte Carlo para probar si un backtest fue un camino
-> afortunado: [`docs/MONTECARLO.md`](docs/MONTECARLO.md).
+> **No es asesoramiento financiero.** Un backtest no garantiza resultados futuros. Una semana —ni un año— de paper trading demuestra poco. Nada de esto es una recomendación de inversión.
 
 ---
 
-## Qué hay en el kit
+## Metodología
 
-| Archivo | Para qué sirve | Quién lo usa |
+Antes de mirar ningún resultado se **pre-registra** la hipótesis: qué se prueba, con qué parámetros, qué significa «aprobar» y qué tramo de datos queda reservado. Después no se cambia (solo enmiendas fechadas *antes* de ver nada).
+
+- **IS / walk-forward / OOS de un solo uso.** En ETFs, el tramo de desarrollo (IS) es 2007-07 → 2020-12; el examen final (OOS) es 2021-01 → 2026-10 y se mira **una sola vez**. El walk-forward repite «elige en el pasado, prueba el año siguiente» dentro del IS. Un candado en el código impide repetir un tramo reservado con los mismos parámetros, y se niega a lanzarlo si hay cambios sin commitear.
+- **Costes siempre activados** (comisión + slippage). También se prueba todo × 2 y con un día de retraso.
+- **Monte Carlo contra entradas al azar («monos»):** miles de estrategias que entran al azar con las mismas salidas, stops, tamaños y costes. Si la idea real no queda claramente por encima, su ventaja puede ser suerte.
+- Otras pruebas: parámetros vecinos, quitar las 5 mejores operaciones, quitar el mejor activo, subperiodos.
+- **CI** en GitHub Actions: `ruff` + `pytest` **sin red** (los tests de red van con `@pytest.mark.network` y no corren por defecto).
+
+Las reglas duras están en [`CLAUDE.md`](CLAUDE.md): riesgo máx. 1 % por operación, stop obligatorio, máx. 3 posiciones, sin apalancamiento, sin cortos y sin opciones, kill switch si la cuenta cae un **15 %** desde su máximo (era 10 % en la ronda 1). **Nunca inventar cifras:** si un número no sale de un script ejecutado, no existe.
+
+---
+
+## Ronda 1 (cerrada, 2026-11-11)
+
+Ninguna de las 4 candidatas pre-registradas aprobó. **No se opera nada con ellas.** El motor de backtest pasó una auditoría 7/7 (`docs/veredicto.md`). Cifras tomadas de los informes en `reports/`.
+
+| Hipótesis | Idea | Veredicto |
 |---|---|---|
-| `README.md` | Este documento: orden de uso y plan por tandas | Tú |
-| `SETUP_ALPACA.md` | Crear la cuenta paper, sacar las claves, conectar Alpaca a Claude Code | Tú (15 min) |
-| `CLAUDE.md` | Reglas duras y convenciones del repo. Claude Code lo lee solo en cada sesión | Claude |
-| `prompts/01_fable_investigacion.md` | Elegir 3–5 estrategias candidatas y fijar los criterios de aprobado **antes** de probar | **Fable** |
-| `prompts/02_sonnet_motor_backtest.md` | Programar el motor de backtest, los datos, las métricas y los tests | **Sonnet** |
-| `prompts/03_fable_backtest_y_veredicto.md` | Correr y auditar los backtests, pruebas de estrés y veredicto | **Fable** |
-| `prompts/04_fable_manual_operacion.md` | Escribir `STRATEGY.md` (el manual) y la especificación de `signals.py` | **Fable** |
-| `prompts/05_sonnet_paper_diario.md` | Programar el ejecutor diario en paper + cron/systemd | **Sonnet** |
-| `prompts/06_revision_semanal.md` | Revisión semanal contra el benchmark | **Sonnet** (Fable si queda cupo) |
-| `docs/estrategias.md` | Informe de 15–20 estrategias (ya en el repo) | Fable (paso 1) |
-| `docs/research-mercado-nov-2026.md` | Research de mercado, Jiang, Fang y Trump | Contexto |
-| `docs/VERIFICACIONES.md` | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) | Tú / Claude |
-| `plantillas/.env.example`, `plantillas/.gitignore` | Para copiar al repo | Tú |
+| **H1** `donchian_crypto` | Ruptura de 55 días en BTC/ETH/LTC/BCH | Rechazada en IS: la caída superaba el kill switch del 10 % incluso arriesgando el 0,5 % |
+| **H2** `tsmom_etf` | Momentum a 12 meses en 7 ETFs | Rechazada en IS: no se distinguía del azar (**p = 0,597**) |
+| **H3** `rsi2_etf` | RSI(2) con tendencia SMA200 | Rechazada en IS: expectancy casi nula; negativa con costes × 2 y con un día de retraso |
+| **H4** `donchian_etf` | Ruptura de 55 días en 7 ETFs | Rechazada en el OOS (el único que se gastó) |
+
+**H4** fue la mejor: pasó **13 de 14** criterios. En el OOS (2021-01 → 2026-10, riesgo 0,5 %), [el informe](reports/donchian_etf/oos_20261111-1636/resumen.md) da:
+
+| Métrica (OOS) | H4 | SPY (comprar y mantener) |
+|---|---|---|
+| CAGR | **3,45 %** | 14,65 % |
+| Máx. drawdown | **7,04 %** | 24,50 % |
+| Sharpe | 0,62 | 0,91 |
+
+Suspendió el criterio 3 (rentabilidad frente a SPY) y, por regla, quedó rechazada: no se retoca después de ver el examen.
+
+Baselines previos al veredicto (referencia, no son el veredicto): Donchian sin kill switch, contra 1.000 estrategias al azar, **p = 0,034**. TSMOM SPY: **p = 0,33** (indistinguible). Detalle en [`docs/ROBUSTEZ.md`](docs/ROBUSTEZ.md) y [`docs/registro_pruebas.md`](docs/registro_pruebas.md).
+
+Para la ronda 2, el objetivo pasó a un «punto medio» entre caída y rentabilidad (ya no se exige batir a SPY en CAGR) y el kill switch subió de −10 % a −15 %.
 
 ---
 
-## Informes
+## Ronda 2 (implementada, sin backtests; en pausa)
 
-Informes ya en `main` (el código del motor sigue en la rama [`prep/motor-backtest`](https://github.com/SrJorgeG/trading-lab/tree/prep/motor-backtest), sin fusionar):
+Hipótesis pre-registradas en [`docs/hipotesis_ronda2.md`](docs/hipotesis_ronda2.md):
 
-| Informe | Qué es |
+- **H5** `sector_mom`: una vez al mes, los 3 sectores de EE. UU. que más han subido en 6 meses (9 Select Sector SPDR), solo si han subido.
+- **H6** `tom_etf`: estar en bolsa solo alrededor del cambio de mes. **Aparcada** (no se implementa ni se ejecuta en esta ronda).
+- **H7** `sector_lowvol`: el mismo esqueleto que H5, eligiendo los 3 sectores más tranquilos.
+
+El 2026-11-12 se fijaron las decisiones P7–P16 ([`docs/decisiones_ronda2.md`](docs/decisiones_ronda2.md)) *antes* de cualquier IS: efectivo parado al 0 %, paper 12 meses, cripto fuera, riesgo calibrado a caída IS ≤ 12 %, caja = letras a 3 meses + 2 pp, máx. 60 variantes (solo H5 y H7), la ronda 2 es la última de backtest salvo decisión posterior, cuenta paper a margen 1× sin cortos ni opciones, y candado de un solo uso por tramo.
+
+La [PR #2](https://github.com/SrJorgeG/trading-lab/pull/2) fusionó esa implementación a `main`. CI en verde: **322 tests pasados**, 3 deseleccionados (red). **No se ha ejecutado ningún backtest de H5/H7 con datos reales.** Siguen pendientes la descarga y verificación de datos (R2-3, R2-18) y, al retomar, revisar el criterio 14: en un test de potencia sintético no aprueba en el 0 % de las series, ni siquiera con ventaja conocida (`reports/potencia/potencia.md`).
+
+---
+
+## Estructura
+
+```
+README.md, CLAUDE.md, SETUP_ALPACA.md
+config/                   # settings.toml y una ficha TOML por estrategia
+src/tlab/                 # motor: datos, simulador, métricas, riesgo, broker paper
+scripts/                  # backtest, datos, Monte Carlo, robustez, visor
+tests/                    # pytest; por defecto sin red
+docs/                     # hipótesis, veredictos, especificaciones, informes
+reports/                  # informes de la ronda 1 y potencia sintética; sin IS de H5/H7
+prompts/                  # sesiones originales del flujo de trabajo (investigación → paper)
+plantillas/.env.example   # plantilla de claves paper (nunca subir un .env)
+```
+
+Documentos de partida:
+
+| Documento | Qué es |
 |---|---|
-| [`docs/INFORME_MOTOR_Y_BASELINES.md`](docs/INFORME_MOTOR_Y_BASELINES.md) | Resumen en claro: qué hace el motor, tabla de referencia y las 3 decisiones para Fable |
-| [`docs/baselines.md`](docs/baselines.md) | Resultados de referencia completos (CAGR, drawdown, Sharpe, costes ×2) |
-| [`docs/PREP_NOTES.md`](docs/PREP_NOTES.md) | Notas técnicas del motor, limitaciones y preguntas para Fable |
-| [`docs/estrategias.md`](docs/estrategias.md) | Informe de 15–20 estrategias (paso 1) |
-| [`docs/research-mercado-nov-2026.md`](docs/research-mercado-nov-2026.md) | Research de mercado, Jiang, Fang y Trump (nov 2026) |
-| [`docs/VERIFICACIONES.md`](docs/VERIFICACIONES.md) | Dudas del kit contrastadas con docs oficiales (cripto, paper, permisos, oferta Fable) |
-| [`docs/research-llm-trading.md`](docs/research-llm-trading.md) | Qué dice la evidencia sobre LLMs operando, errores típicos de bots y encargos para Fable |
-| [`docs/MONTECARLO.md`](docs/MONTECARLO.md) | Qué es una simulación de Monte Carlo, cómo leer el abanico y las corridas de referencia (Donchian, Faber, TSMOM) |
-| [`docs/ROBUSTEZ.md`](docs/ROBUSTEZ.md) | Mapa de parámetros (meseta o pico, DSR, PBO) y prueba contra 1000 estrategias al azar; resultados de Donchian y TSMOM |
-| [Mapa Donchian](reports/robustez/donchian_atr_nokill/sweep_is_20261111-0454/resumen.md) · [vs azar](reports/robustez/donchian_atr_nokill/azar_is_20261111-0455/resumen.md) | Donchian sin kill switch, in-sample: robustez 89/100 (meseta), PBO 33 %; contra el azar p = 0,034 (ventaja probable) |
-| [Mapa TSMOM SPY](reports/robustez/tsmom_12m_spy/sweep_is_20261111-0454/resumen.md) · [vs azar](reports/robustez/tsmom_12m_spy/azar_is_20261111-0455/resumen.md) | TSMOM SPY, in-sample: robustez 97/100 pero PBO 87 % (no optimizar); contra el azar p = 0,33 (indistinguible) |
+| [`docs/veredicto.md`](docs/veredicto.md) | Veredicto de la ronda 1 (H1–H4) y auditoría del motor |
+| [`docs/informe_estudio.md`](docs/informe_estudio.md) | Revisión independiente (2026-11-12) |
+| [`docs/decisiones_ronda2.md`](docs/decisiones_ronda2.md) | Decisiones P7–P16, antes de cualquier IS |
+| [`docs/hipotesis.md`](docs/hipotesis.md) / [`docs/hipotesis_ronda2.md`](docs/hipotesis_ronda2.md) | Pre-registro de cada ronda |
+| [`docs/INFORME_RONDA2_IMPL.md`](docs/INFORME_RONDA2_IMPL.md) | Qué se implementó en la PR #2 y qué no |
+| [`docs/MONTECARLO.md`](docs/MONTECARLO.md) | Cómo leer una simulación de Monte Carlo |
+| [`docs/ROBUSTEZ.md`](docs/ROBUSTEZ.md) | Mapa de parámetros (DSR/PBO) y prueba contra el azar |
+| [`docs/baselines.md`](docs/baselines.md) | Corridas de referencia (Donchian, Faber, TSMOM) |
 
-Los CSV y resúmenes de las corridas de referencia están en `reports/`. Los informes de Monte Carlo (md, csv, html, png) están en `reports/baselines/20261111-0141/<slug>/`. Los de robustez (mapa de parámetros y contra el azar) están en `reports/robustez/<slug>/`.
+Los CSV y resúmenes de la ronda 1 están en `reports/`. Monte Carlo: `reports/baselines/20261111-0141/<slug>/`. Robustez: `reports/robustez/<slug>/`.
 
 ---
 
-## Instalación (5 minutos)
+## Instalación y tests
 
-En jorge-cachy:
+Hace falta **Python 3.12** y [`uv`](https://docs.astral.sh/uv/).
 
 ```bash
-# 1) Descomprimir el kit y crear el repo
-mkdir -p ~/trading-lab && cd ~/trading-lab
-tar -xzf ~/Descargas/trading-lab-kit.tar.gz --strip-components=1   # ajusta la ruta del .tar.gz
-cp plantillas/.gitignore .gitignore
-cp plantillas/.env.example .env          # luego rellenas las claves (ver SETUP_ALPACA.md)
-chmod 600 .env
-git init && git add -A && git commit -m "kit inicial"   # .env queda fuera por el .gitignore
+git clone https://github.com/SrJorgeG/trading-lab.git
+cd trading-lab
+uv sync --all-extras --dev
 
-# 2) Comprobar herramientas
-uv --version || sudo pacman -S uv        # uv: gestor de Python rápido (CachyOS/Arch)
-claude --version
+uv run ruff check
+uv run ruff format --check
+uv run pytest -q                  # sin red; en el CI de main: 322 passed, 3 deselected
 ```
 
-3) Pega el informe de estrategias en `docs/estrategias.md` (sustituye el texto de ejemplo).
-4) Sigue `SETUP_ALPACA.md`.
-
----
-
-## Orden de uso
-
-Cada paso es **una sesión corta de Claude Code** que se abre en `~/trading-lab`. Para cada uno:
+Los tests de red (Alpaca/yfinance) no corren por defecto:
 
 ```bash
-cd ~/trading-lab
-claude                      # abre Claude Code
-/model                      # elige el modelo que indica la tabla (o: claude --model fable / --model sonnet)
+uv run pytest -q -m network       # opcional; algunos necesitan claves paper
 ```
 
-Y luego le dices: **"Lee y ejecuta `prompts/0X_....md`"**. Al acabar: revisa el resultado, `git commit`, y `/clear` (borra el contexto) antes del siguiente paso.
+Para un backtest, `uv run python scripts/backtest.py --help`. Los modos reservados (OOS y tramos equivalentes de la ronda 2) están candados: H1–H4 están rechazadas y no se reexaminan. El visor opcional:
 
-| Paso | Prompt | Modelo | Qué sale | Tiempo aprox. |
-|---|---|---|---|---|
-| 0 | `SETUP_ALPACA.md` | — (tú) | Cuenta paper + claves + MCP | 15 min |
-| 1 | `01_fable_investigacion.md` | **Fable** | `docs/hipotesis.md` | 1 sesión |
-| 2 | `02_sonnet_motor_backtest.md` | **Sonnet** | Repo con motor, datos, tests en verde | 1–2 sesiones |
-| 3 | `03_fable_backtest_y_veredicto.md` | **Fable** | `docs/veredicto.md` + informes | 1–2 sesiones |
-| 4 | `04_fable_manual_operacion.md` | **Fable** | `STRATEGY.md` + `docs/signals_spec.md` | 1 sesión |
-| 5 | `05_sonnet_paper_diario.md` | **Sonnet** | `scripts/run_daily.py` + timer diario | 1 sesión |
-| 6 | `06_revision_semanal.md` | **Sonnet** | `reports/semana_AAAA-SS.md` | cada semana |
+```bash
+uv sync --extra visor
+uv run streamlit run scripts/visor.py
+```
 
-**Si el paso 3 dice "ninguna estrategia pasa":** es un resultado válido (y frecuente). Vuelve al paso 1 con lo aprendido, **no** relajes los criterios para que algo "apruebe".
+Si quieres conectar la cuenta **paper** de Alpaca, sigue [`SETUP_ALPACA.md`](SETUP_ALPACA.md): copia `plantillas/.env.example` a `.env` (queda fuera de git) y usa **solo** claves paper. El código se niega a arrancar contra el endpoint real.
+
+Todavía no hay ejecutor diario ni `STRATEGY.md`: ese era el siguiente paso, cuando se retome.
 
 ---
 
-## Plan por tandas (horario de Madrid)
-
-Datos de tu cuenta (según lo que pasó el Bot general): el límite semanal de Claude se renueva los **jueves a las 15:00**; Fable puede gastar como mucho el **50 % del límite semanal**, y lo consume más rápido que Sonnet. La otra mitad, para Sonnet.
-
-### Tanda 1 — ahora → jueves 12 nov, 15:00
-- Paso 0 (Alpaca) y paso 1 (**Fable**: hipótesis y criterios).
-- Paso 2 (**Sonnet**: motor de backtest con tests). Este es el más largo, pero lo hace Sonnet, así que no gasta cupo de Fable.
-- Si sobra cupo de Fable antes del jueves 15:00: empezar el paso 3 (aunque sea solo la auditoría del motor). El cupo que no gastes antes del reset **se pierde**.
-
-### Tanda 2 — jueves 12 nov, 15:00 → lunes 17 nov, 08:59
-- Paso 3 (**Fable**: backtests, estrés, walk-forward, veredicto).
-- Paso 4 (**Fable**: `STRATEGY.md`, el manual que ejecutarán otros).
-- Paso 5 (**Sonnet**: ejecutor diario en paper). Objetivo: que el lunes 16 ya opere en paper.
-- Domingo 16: una última sesión de **Fable** para revisar el manual y el ejecutor ("busca agujeros"). Después del lunes 08:59 Fable vuelve a ir por créditos de pago.
-
-### Tanda 3 — opcional, solo si tienes el reset extra de Fable
-Oficialmente, el reset de Fable en Pro solo se da si la facturación de pago estaba activa **antes del 9 nov 2026 a las 18:00, hora de Madrid** (10:00 PT), y caduca el **lun 17 nov 08:59, hora de Madrid**. El Bot general creía que **no** lo tienes (te suscribiste después de ese corte). **Míralo en Settings → Usage** antes de contar con ello. Si lo tienes, úsalo **antes del lunes 08:59** para:
-- una segunda ronda del paso 1 → 3 con las ideas que fallaron (nuevas hipótesis, no retocar las mismas hasta que "salgan"), o
-- una auditoría profunda del código (look-ahead, costes, errores de órdenes).
-
-### Después del 17
-- El ejecutor diario es **Python puro**: no gasta cupo.
-- Revisión semanal con **Sonnet** (paso 6).
-- Dinero real: **no** hasta que lleve **como mínimo 2–3 meses en paper** comportándose como dice el backtest. Y aun así, con una cantidad que podáis perder entera.
-
----
-
-## Qué modelo para qué
-
-| Tarea | Modelo | Por qué |
-|---|---|---|
-| Diseñar hipótesis, fijar criterios, detectar trampas (sesgos), dar veredicto, escribir el manual | **Fable** | Requiere pensar de verdad |
-| Programar el motor, tests, scripts, refactors, arreglar errores de lint | **Sonnet** | Es mecánico y Sonnet lo hace bien y barato |
-| Ejecutar la estrategia cada día | **Python puro** (sin IA) | Determinista, gratis, sin "creatividad" |
-| Revisión semanal | **Sonnet** | Leer números y compararlos |
-
-Cambiar de modelo dentro de Claude Code: `/model` y eliges. Desde la terminal: `claude --model fable` o `claude --model sonnet` (son alias oficiales; `fable` resuelve a Fable 5.2). Hace falta Claude Code **v2.1.321 o posterior** para Fable 5.2 (`claude update` si no). Comprueba con `/status` qué modelo está activo antes de empezar. Detalle de la oferta Pro: `docs/VERIFICACIONES.md`.
-
-> **Ojo:** `/model` guarda el modelo elegido como **predeterminado para las sesiones nuevas**. Si te quedas en Fable, el siguiente `claude` (o un `claude -p` del cron) también usará Fable. Por eso todos los comandos automáticos de este kit llevan `--model sonnet` explícito, y conviene volver a `/model` → Sonnet al terminar cada sesión de Fable.
-
----
-
-## Consejos para no quemar el cupo de Fable
-
-1. **Fable solo piensa, no teclea código repetitivo.** Si Fable propone un cambio grande de código, que lo deje escrito como tarea en `docs/tareas_sonnet.md` y lo haces luego con Sonnet.
-2. **Sesiones cortas y con un único objetivo.** Un prompt = una sesión. Al terminar: `git commit` y `/clear`.
-3. **`/clear` entre fases.** El contexto acumulado se paga en cada mensaje. Todo lo importante ya queda escrito en `docs/`.
-4. **No le pegues datos enormes.** Que Fable lea resúmenes (`reports/*.md`, CSV pequeños), no 10.000 filas de velas.
-5. **Lanza los cálculos pesados fuera del chat.** Los backtests los corre Python; Fable solo lee el informe que sale.
-6. **Mira el consumo** con `/usage` de vez en cuando (muestra los límites del plan). Si Fable pasa del 40 % del límite semanal, cierra lo que esté haciendo y deja el resto escrito para la siguiente tanda.
-7. **Si algo falla en bucle** (tests, instalación), corta, `/clear`, y pásaselo a Sonnet.
-
----
-
-## Reglas que no se negocian (resumen de `CLAUDE.md`)
-
-- Solo **paper**. Nunca el endpoint real. Nunca claves reales.
-- Riesgo máx. **1 %** por operación, stop obligatorio, máx. **3** posiciones abiertas.
-- Sin apalancamiento, sin cortos (vender sin tener el activo) y sin opciones.
-- **Kill switch** (parada de emergencia) si la cuenta cae más de un **15 %** desde su máximo.
-- **Nunca inventar resultados.** Si un número no sale de un script que se ha ejecutado, no existe.
-
-Ni yo ni Claude somos asesores financieros. Esto es para aprender.
+Ni este repo ni quienes lo mantienen somos asesores financieros. Esto es para aprender.
