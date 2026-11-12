@@ -491,6 +491,33 @@ periodo, y cualquier ejecución de las reglas de H5–H7 sobre datos reales.
 código y configuración) y R2-3 (datos verificados) hechos, y la auditoría del motor repetida
 sobre el código nuevo.
 
+### 2026-11-12, 10:05 (hora de Madrid) — precisiones de implementación, ANTES de ejecutar ningún backtest de H5–H7
+Origen: `docs/especificaciones_ronda2.md` §0.1 (D1–D14). Sigue sin existir código, datos ni
+informes de las candidatas. **Ningún criterio de §4 se suaviza.**
+
+**E14 — huecos de definición cerrados al escribir las especificaciones.** Lo que cambia la
+letra de este documento o de `docs/tareas_sonnet.md`:
+- **Rejillas (D1):** los valores de §2 ({95, 126, 158}, {1, 2}, etc.) se escriben literales en
+  el TOML. La rejilla automática ±25 % del código daría 94 en vez de 95 y dejaría
+  `entry_before_end` solo en {1}.
+- **Caja (D3):** el capital crece `(1 + y)^(días naturales / 365,25)` entre sesiones, con el
+  tipo de la sesión anterior, en vez de `^(1/252)` por sesión (R2-4). Así una serie constante
+  da exactamente su tipo como CAGR; con calendario real la diferencia es de centésimas y va en
+  contra de la candidata.
+- **Guarda (D4):** el hash de congelación incluye `f`; no hay `--force` para los tramos; hace
+  falta `frozen = true` en el TOML para pasar del IS, y con él ya no se ejecuta ningún IS (E2).
+- **Monos (D6, D7):** el mono de H6 lleva la misma venta sostenida que la candidata (E6); el
+  «repetir el sorteo» de E5 se hace sorteando entre las sesiones válidas (misma distribución).
+  p = `(1 + k) / (N + 1)`; un mono sin Sharpe cuenta como «no supera» y sigue en N. Con
+  N = 1.000, `p < 0,02` es `k ≤ 19` con esta fórmula y con la proporción simple.
+- **Universo incompleto (D10):** en H5/H7, principal y réplica, si un símbolo no tiene 365
+  velas al inicio del tramo se para y se decide por enmienda (no se rebaraja el universo).
+- **Cartera combinada (D9):** huecos por grupo (sectores ≤ 2, `SPY` ≤ 1; un sector no puede
+  usar el hueco de `SPY`) y, en una misma apertura, `SPY` entra el último.
+- **Calendario de H6 en backtest (D2):** índice de `SPY` recortado en 2026-10-31; octubre de
+  2026 no es mes completo y no genera entrada.
+- El resto (D5, D8, D11–D14) son detalles de informe y de código sin efecto sobre las reglas.
+
 ### Preguntas abiertas para Jorge tras la auditoría (detalle en `docs/auditoria_ronda2.md` §5)
 | # | Decisión | Opción tomada mientras no digas otra cosa | Alternativa |
 |---|---|---|---|

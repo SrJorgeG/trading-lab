@@ -127,6 +127,12 @@ En concreto: R2-8 se implementa con las fórmulas de E6 (no con las de §6.3), R
 persistente de E4 y el sorteo de E5, R2-4 aplica E10, R2-5 aplica E11 y R2-3 se amplía con R2-18.
 Las prohibiciones de la sección anterior siguen igual, con la precisión de E13.
 
+**Especificación detallada (2026-11-12):** `docs/especificaciones_ronda2.md` da, para cada tarea
+R2-1 … R2-18, ficheros, firmas, casos a mano con números, casos límite, criterios de aceptación
+y el orden de implementación. Léela antes de escribir código (empieza por §0, «Hallazgos»). Donde
+precise algo de esta lista (p. ej. la fórmula de la caja de R2-4, enmienda E14), **manda la
+especificación**.
+
 - [ ] R2-14. **Casos a mano que faltaban para las señales de panel** (tabla y parámetros de S1:
       `lookback=2, top_n=2, keep_n=3, atr_mult=3, atr_n=1`):
   - **S5 (empate):** B cierra a 110 el 02-01 → `mom` de A y de B = 0,10. Con `top_n = 1`:
