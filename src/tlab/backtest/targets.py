@@ -179,7 +179,7 @@ class Target:
         return RunOutput(eq, tr if len(tr) else pd.DataFrame(), expo, None, w)
 
     def with_kill_switch(self, on: bool) -> Target:
-        kill = self.meta.get("kill_threshold", 0.10) if on else None
+        kill = self.meta.get("kill_threshold", 0.15) if on else None
         return replace(self, cfg=replace(self.cfg, kill_switch_drawdown=kill), kill_switch=on)
 
 

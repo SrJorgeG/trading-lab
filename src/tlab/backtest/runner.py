@@ -510,7 +510,13 @@ def candidate_sections(
                 f"{metrics.cagr(r_f.equity) * 100:.2f} % | "
                 f"{metrics.sharpe(r_f.equity, ppy):.2f} |"
             )
-        chosen = calibrate_risk(dds, thr)
+        if "calibration_dd_limit" not in sc:
+            raise KeyError(
+                f"Falta `calibration_dd_limit` en el TOML de {strategy} (R2-2: el límite de "
+                "calibración sale de la estrategia, no de un valor por defecto)."
+            )
+        limit = float(sc["calibration_dd_limit"])
+        chosen = calibrate_risk(dds, limit)
         lines += [
             "## Calibración del riesgo en IS (P1, hipotesis.md §3)",
             "| riesgo por operación | DD máx. IS | episodios kill switch | CAGR | Sharpe |",
@@ -518,11 +524,11 @@ def candidate_sections(
             *rows,
             "",
             (
-                f"Riesgo que seleccionaría P1 (mayor con DD ≤ {thr * 100:.0f} %): "
-                f"**{chosen * 100:.2f} %**"
+                f"Riesgo seleccionado (mayor con caída ≤ {limit * 100:.0f} %; kill switch al "
+                f"{thr * 100:.0f} %): **{chosen * 100:.2f} %**"
                 if chosen is not None
-                else f"**Ninguno** cumple DD ≤ {thr * 100:.0f} %: según P1 la candidata muere "
-                "en IS."
+                else f"**Ninguno** cumple caída ≤ {limit * 100:.0f} %: según P1 la candidata "
+                "muere en IS."
             ),
             "",
         ]

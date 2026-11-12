@@ -217,9 +217,10 @@ def test_kill_switch_episodes_reset_peak():
 
 
 def test_calibrate_risk():
-    assert calibrate_risk({0.01: -0.15, 0.0075: -0.099, 0.005: -0.07}) == 0.0075
-    assert calibrate_risk({0.01: -0.08, 0.0075: -0.06, 0.005: -0.04}) == 0.01
-    assert calibrate_risk({0.01: -0.30, 0.0075: -0.2, 0.005: -0.11}) is None
+    lim = 0.10  # R2-2: el límite ya no tiene valor por defecto
+    assert calibrate_risk({0.01: -0.15, 0.0075: -0.099, 0.005: -0.07}, lim) == 0.0075
+    assert calibrate_risk({0.01: -0.08, 0.0075: -0.06, 0.005: -0.04}, lim) == 0.01
+    assert calibrate_risk({0.01: -0.30, 0.0075: -0.2, 0.005: -0.11}, lim) is None
 
 
 def _trades():
@@ -362,6 +363,7 @@ def _synthetic_candidate():
         "min_history_bars": 365,
         "risk_per_trade": 0.01,
         "risk_levels": [0.01, 0.0075, 0.005],
+        "calibration_dd_limit": 0.10,
         "kill_switch_in_backtest": False,
         "subperiods": [["2011-06-01", "2012-12-31"], ["2013-01-01", "2015-06-30"]],
         "walkforward": {"first_test": "2013-01-01", "test_months": 12, "n_windows": 2,

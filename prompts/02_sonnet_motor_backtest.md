@@ -28,7 +28,7 @@ virtual_equity_usd = 10000      # capital con el que razonamos aunque la cuenta 
 risk_per_trade = 0.01
 max_positions = 3
 max_gross_exposure = 1.0        # sin apalancamiento
-kill_switch_drawdown = 0.10
+kill_switch_drawdown = 0.15
 [costs.equity]
 commission_per_share = 0.0
 slippage_bps = 5                # por lado; ETFs muy líquidos
@@ -100,7 +100,7 @@ Usa datos sintéticos deterministas (`tests/conftest.py`) y, si hace falta, pequ
 | `test_position_size_risk_cap` | La pérdida al stop (con costes) nunca supera el 1 % del equity; redondeo hacia abajo; cantidad 0 → no hay operación. |
 | `test_max_positions` | Nunca hay más de 3 posiciones abiertas aunque haya 10 señales; el desempate es determinista. |
 | `test_no_leverage` | La exposición bruta nunca supera el equity; nunca hay cantidades negativas (cortos). |
-| `test_kill_switch` | Una caída > 10 % desde el máximo cierra todo y bloquea entradas posteriores. |
+| `test_kill_switch` | Una caída > 15 % desde el máximo cierra todo y bloquea entradas posteriores. |
 | `test_metrics_known_values` | Sharpe, máx. drawdown, CAGR, expectancy calculados sobre series pequeñas con resultado conocido a mano. |
 | `test_engines_agree_single_asset` | En un caso de 1 activo sin límites de cartera, `portfolio_sim` y `vbt_engine` dan nº de operaciones idéntico y rentabilidad total con diferencia < 0,5 puntos porcentuales (explica cualquier diferencia). |
 | `test_walkforward_windows` | Ventanas cronológicas, sin solape en la parte de prueba, cubren el periodo pedido. |

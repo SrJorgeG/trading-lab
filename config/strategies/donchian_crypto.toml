@@ -14,6 +14,7 @@ data_source = "yfinance"      # historia larga (§0): Alpaca solo sirve para con
 min_history_bars = 365          # cada activo entra al universo cuando tiene >= 365 velas
 risk_per_trade = 0.01           # se calibra en IS (1,0 / 0,75 / 0,5 %) y se congela (P1)
 risk_levels = [0.01, 0.0075, 0.005]
+calibration_dd_limit = 0.10     # ronda 1 (P1 de hipotesis.md)
 kill_switch_in_backtest = false # P1: métricas sin kill switch; se cuentan los episodios aparte
 subperiods = [["2015-10-01", "2019-06-30"], ["2019-07-01", "2023-02-28"], ["2023-03-01", "2026-10-31"]]
 

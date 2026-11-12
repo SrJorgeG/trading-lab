@@ -52,7 +52,7 @@ def subperiods(start, end, n: int = 3) -> list[tuple[pd.Timestamp, pd.Timestamp]
 # --- Añadido en el paso 2 (candidatas de docs/hipotesis.md) ---------------------------------
 
 
-def kill_switch_episodes(equity: pd.Series, threshold: float = 0.10) -> list[pd.Timestamp]:
+def kill_switch_episodes(equity: pd.Series, threshold: float = 0.15) -> list[pd.Timestamp]:
     """Fechas en las que el kill switch habría saltado (equity < máximo × (1 − umbral)),
     REINICIANDO el máximo tras cada episodio (hipotesis.md §3, P1). La primera fecha es la
     de la regla literal (parada permanente)."""
@@ -115,7 +115,7 @@ def expectancy_by_asset(trades: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def calibrate_risk(max_dd_by_level: dict[float, float], limit: float = 0.10) -> float | None:
+def calibrate_risk(max_dd_by_level: dict[float, float], limit: float) -> float | None:
     """Mayor fracción de riesgo cuyo drawdown máximo IS (positivo o negativo) es <= `limit`.
     None = ninguna lo cumple (la candidata muere en IS). hipotesis.md §3, P1."""
     for f in sorted(max_dd_by_level, reverse=True):

@@ -7,7 +7,7 @@ virtual_equity_usd = 10000      # capital con el que razonamos aunque la cuenta 
 risk_per_trade = 0.01
 max_positions = 3
 max_gross_exposure = 1.0        # sin apalancamiento
-kill_switch_drawdown = 0.10
+kill_switch_drawdown = 0.15     # regla dura 6, subida del 10 % al 15 % por Jorge (2026-11-11)
 max_position_fraction = 0.3333  # tope por posición: coste <= equity/3 (hipotesis.md §2)
 
 [costs.equity]

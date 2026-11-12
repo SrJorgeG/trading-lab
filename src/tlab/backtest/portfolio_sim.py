@@ -33,7 +33,7 @@ class SimConfig:
     risk_per_trade: float = 0.01
     max_positions: int = 3
     max_gross_exposure: float = 1.0
-    kill_switch_drawdown: float | None = 0.10
+    kill_switch_drawdown: float | None = 0.15
     allow_fractional: bool = False
     costs: dict[str, CostModel] = field(
         default_factory=lambda: {"equity": CostModel(), "crypto": CostModel()}

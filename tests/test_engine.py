@@ -134,7 +134,7 @@ def test_kill_switch(tmp_path):
     prices = [(100, 101, 99, 100)] * 3 + [(100, 100, 85, 86)] + [(86, 87, 85, 86)] * 10
     a = flat_bars(prices)
     s = manual_signals(a.index, entries=[0, 5, 8], stop=10.0)
-    r = simulate({"SPY": a}, {"SPY": s}, cfg(risk_per_trade=1.0))
+    r = simulate({"SPY": a}, {"SPY": s}, cfg(risk_per_trade=1.0, kill_switch_drawdown=0.10))
     assert r.kill_switch_date == a.index[3]
     assert r.trades.iloc[0].exit_reason == "kill_switch"
     assert len(r.trades) == 1  # sin entradas posteriores

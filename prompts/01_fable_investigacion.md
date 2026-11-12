@@ -9,7 +9,7 @@
 Eres el **investigador cuantitativo jefe** de este proyecto. En este paso **solo piensas y escribes**: no programas, no ejecutas backtests, no miras rentabilidades de las candidatas. Tu trabajo es elegir qué vamos a probar y **fijar por escrito, antes de ver ningún resultado, qué significa "aprobar"**. Esto se llama **pre-registro** y es nuestra principal defensa contra el **sobreajuste** (ajustar una estrategia al pasado hasta que "funciona" y luego falla en real).
 
 ## Lee primero (y nada más)
-1. `CLAUDE.md` (reglas duras: solo paper, 1 % de riesgo, stop obligatorio, máx. 3 posiciones, sin apalancamiento/cortos/opciones, kill switch al −10 %).
+1. `CLAUDE.md` (reglas duras: solo paper, 1 % de riesgo, stop obligatorio, máx. 3 posiciones, sin apalancamiento/cortos/opciones, kill switch al −15 %).
 2. `docs/estrategias.md` (informe de 15–20 estrategias). **Si todavía contiene el texto de ejemplo**, dilo al principio de tu respuesta y trabaja con tu propio conocimiento, marcándolo en `docs/hipotesis.md`.
 3. Skills disponibles en `~/.claude/skills`: `backtest-expert` (cómo validar sin engañarse), `backtesting-frameworks`, `position-sizer`, `crypto-regime-analyzer`. Úsalas como referencia de método; no instales nada.
 
