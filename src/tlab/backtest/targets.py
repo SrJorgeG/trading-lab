@@ -22,9 +22,10 @@ import pandas as pd
 
 from tlab import metrics
 from tlab.backtest.allocation_sim import simulate_weights
-from tlab.backtest.costs import CostModel, cost_models
+from tlab.backtest.costs import cost_models
 from tlab.backtest.portfolio_sim import SimConfig, SimResult, simulate
 from tlab.backtest.runner import OOSGuardError, asset_entry_dates, periods_per_year
+from tlab.backtest.tranches import is_round2, load_tranche, tranche_costs
 from tlab.config import ROOT, asset_class_of, load_settings, load_strategy_config
 from tlab.strategies import (
     ALLOCATION_STRATEGIES,
@@ -290,17 +291,23 @@ def build_target(
     params: dict | None = None,
     start: str | None = None,
     is_end: str | None = None,
+    tranche: str = "is",
 ) -> Target:
     """Construye el objetivo con los mismos costes/reglas que ``runner.run_backtest``.
+
+    Ronda 2: ``tranche`` elige universo, fechas y costes de ese tramo (el periodo `"is"` del
+    objetivo pasa a ser el tramo pedido, de modo que las herramientas de robustez no cambian).
 
     ``data`` permite pasar velas ya cargadas (tests); si no, se leen de la caché de datos.
     """
     s = settings or load_settings()
     sc: dict = {}
+    tr = None
     if is_signal_strategy(strategy):
         kind = "signals"
         sc = strat_cfg if strat_cfg is not None else load_strategy_config(strategy)
-        uni = list(universe or sc["universe"])
+        tr = load_tranche(sc, tranche) if is_round2(sc) else None
+        uni = list(universe or (tr.universe if tr else sc["universe"]))
         p = dict(sc.get("params", {}))
         is_end = is_end or sc.get("is_end")
         label = sc.get("status", "")
@@ -340,7 +347,11 @@ def build_target(
         if exact and "min_history_bars" in sc
         else {}
     )
-    costs: dict[str, CostModel] = cost_models(s, costs_mode)
+    schedule = None
+    if tr is not None:
+        costs, schedule = tranche_costs(s, tr, costs_mode)
+    else:
+        costs = cost_models(s, costs_mode)
     r = s["risk"]
     cfg = SimConfig(
         initial_equity=s["capital"]["virtual_equity_usd"],
@@ -350,11 +361,16 @@ def build_target(
         max_gross_exposure=r["max_gross_exposure"],
         kill_switch_drawdown=r["kill_switch_drawdown"] if kill_switch else None,
         costs=costs,
+        cost_schedule=schedule,
     )
     if kind == "weights":
         ppy = 365 if any(asset_class_of(u) == "crypto" for u in uni) else 252
     else:
         ppy = periods_per_year(uni)
+    bounds = _bounds(bars, s, is_end, start, exact_start=exact)
+    if tr is not None:  # el periodo "is" del objetivo es el tramo pedido
+        bounds = {**bounds, "is": (tr.start, tr.end)}
+        entry_from = asset_entry_dates(bars, int(sc.get("min_history_bars", 365)))
     return Target(
         strategy=strategy,
         kind=kind,
@@ -362,7 +378,7 @@ def build_target(
         bars=bars,
         params=p,
         cfg=cfg,
-        bounds=_bounds(bars, s, is_end, start, exact_start=exact),
+        bounds=bounds,
         ppy=ppy,
         kill_switch=kill_switch,
         costs_mode=costs_mode,
