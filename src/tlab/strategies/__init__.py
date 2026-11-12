@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from tlab.strategies import allocation, demo_sma, donchian_atr, rsi2_etf, tsmom_etf
+from tlab.strategies import allocation, demo_sma, donchian_atr, rsi2_etf, sector_rank, tsmom_etf
 from tlab.strategies.base import PanelSignalFn, as_panel
 
 SIGNAL_STRATEGIES = {
@@ -14,9 +14,12 @@ SIGNAL_STRATEGIES = {
     "tsmom_etf": tsmom_etf.generate_signals,
     "rsi2_etf": rsi2_etf.generate_signals,
 }
-# Ronda 2: estrategias que miran varios activos a la vez (ranking de panel). Se registran en
-# `strategies/sector_rank.py` (R2-7) para no crear importaciones circulares.
-PANEL_STRATEGIES: dict[str, PanelSignalFn] = {}
+# Ronda 2: estrategias que miran varios activos a la vez (ranking de panel).
+# H5 y H7 comparten función: solo cambia `params["rank_by"]` ("mom" / "lowvol").
+PANEL_STRATEGIES: dict[str, PanelSignalFn] = {
+    "sector_mom": sector_rank.generate_signals_panel,
+    "sector_lowvol": sector_rank.generate_signals_panel,
+}
 # Ids pre-registradas: sus fechas OOS están protegidas (ver backtest/runner.py).
 CANDIDATES = ("donchian_crypto", "tsmom_etf", "rsi2_etf", "donchian_etf")
 # Ronda 2 (H6 `tom_etf` aparcada, E15: no se registra).
