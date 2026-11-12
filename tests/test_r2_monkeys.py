@@ -201,3 +201,38 @@ def test_m14_con_ventaja_conocida_la_candidata_supera_al_percentil_90(settings):
     )
     res = run_custom_monkeys(t, "rank", n=100, seed=42, n_jobs=1)
     assert res.percentile >= 0.9
+
+
+# ---------------------------------------------------------------- script guardado (aceptación)
+def test_script_monos_rechaza_holdout_y_full(tmp_path, settings):
+    from test_r2_tranches import clean_probe
+
+    from tlab.backtest.monkeys_r2 import run_monkeys_r2
+    from tlab.backtest.tranches import TrancheGuardError
+
+    for tr in ("holdout_old", "holdout_new", "full"):
+        with pytest.raises(TrancheGuardError):
+            run_monkeys_r2(
+                "sector_mom", "rank", tr, n=2, confirm_tranche=True, settings=settings,
+                strat_cfg=mini_sc(frozen=True), data=mini_data(), reports_dir=tmp_path / "r",
+                registry=tmp_path / "reg.md", git_probe=clean_probe,
+            )  # fmt: skip
+
+
+def test_script_monos_replica_exige_confirmacion_y_is_funciona(tmp_path, settings):
+    from test_r2_tranches import clean_probe
+
+    from tlab.backtest.monkeys_r2 import run_monkeys_r2
+    from tlab.backtest.tranches import TrancheGuardError
+
+    kw = dict(
+        settings=settings, data=mini_data(), reports_dir=tmp_path / "r",
+        registry=tmp_path / "reg.md", git_probe=clean_probe, n=20, n_jobs=1,
+    )  # fmt: skip
+    with pytest.raises(TrancheGuardError):
+        run_monkeys_r2("sector_mom", "rank", "replica", strat_cfg=mini_sc(frozen=True), **kw)
+    out = run_monkeys_r2("sector_mom", "persist", "is", strat_cfg=mini_sc(), **kw)
+    assert (out / "monos.csv").exists() and "p = (1 + k)" in (out / "resumen.md").read_text(
+        encoding="utf-8"
+    )
+    assert not (tmp_path / "r" / "oos_log.csv").exists()  # el IS no gasta tramos
