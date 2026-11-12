@@ -26,7 +26,13 @@ from tlab.backtest.costs import CostModel, cost_models
 from tlab.backtest.portfolio_sim import SimConfig, SimResult, simulate
 from tlab.backtest.runner import OOSGuardError, asset_entry_dates, periods_per_year
 from tlab.config import ROOT, asset_class_of, load_settings, load_strategy_config
-from tlab.strategies import ALLOCATION_STRATEGIES, SIGNAL_STRATEGIES
+from tlab.strategies import (
+    ALLOCATION_STRATEGIES,
+    PANEL_STRATEGIES,
+    SIGNAL_STRATEGIES,
+    is_signal_strategy,
+    resolve_signal_fn,
+)
 
 PERIODS = ("is", "oos", "full")
 # Parámetros por defecto de las estrategias de asignación (no tienen TOML: son baselines).
@@ -132,8 +138,8 @@ class Target:
 
     def signals(self, params: dict) -> dict[str, pd.DataFrame]:
         """Señales con TODA la historia (son causales), como ``runner.run_signals``."""
-        fn = SIGNAL_STRATEGIES[self.strategy]
-        return {s: fn(df, params) for s, df in self.bars.items()}
+        fn = resolve_signal_fn(self.strategy, self.meta.get("sessions"))
+        return fn(self.bars, params)
 
     def weights(self, params: dict, period: str) -> pd.DataFrame:
         """Pesos mensuales con toda la historia, recortados a las decisiones del periodo."""
@@ -291,7 +297,7 @@ def build_target(
     """
     s = settings or load_settings()
     sc: dict = {}
-    if strategy in SIGNAL_STRATEGIES:
+    if is_signal_strategy(strategy):
         kind = "signals"
         sc = strat_cfg if strat_cfg is not None else load_strategy_config(strategy)
         uni = list(universe or sc["universe"])
@@ -304,7 +310,7 @@ def build_target(
         p = json.loads(json.dumps(ALLOC_DEFAULTS.get(strategy, {})))
         label = "baseline"
     else:
-        known = sorted(SIGNAL_STRATEGIES) + sorted(ALLOCATION_STRATEGIES)
+        known = sorted(SIGNAL_STRATEGIES) + sorted(PANEL_STRATEGIES) + sorted(ALLOCATION_STRATEGIES)
         raise ValueError(f"estrategia desconocida: {strategy}. Disponibles: {', '.join(known)}")
     if params:
         p.update(params)
@@ -315,7 +321,7 @@ def build_target(
         data = load_bars(
             uni,
             "1Day",
-            start=s["data"]["history_start"],
+            start=sc.get("history_start", s["data"]["history_start"]),
             source=src,
             cache_dir=ROOT / s["data"]["cache_dir"],
         )

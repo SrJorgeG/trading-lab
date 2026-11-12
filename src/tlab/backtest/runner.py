@@ -33,7 +33,7 @@ from tlab.backtest.walkforward import fixed_windows, make_windows, pick_best
 from tlab.config import ROOT, asset_class_of, load_settings, load_strategy_config
 from tlab.data.loader import load_bars
 from tlab.report import MADRID, append_registry, write_report
-from tlab.strategies import SIGNAL_STRATEGIES
+from tlab.strategies import resolve_signal_fn
 
 MODES = ("is", "wf", "oos", "full", "robust")
 
@@ -85,7 +85,7 @@ def run_signals(bars: dict, params: dict, fn, cfg: SimConfig, a, b, entry_from=N
     """Señales con TODA la historia (son causales) y simulación solo en [a, b].
     `entry_from[s]`: primera fecha en la que el activo `s` forma parte del universo."""
     entry_from = entry_from or {}
-    sigs = {s: fn(df, params) for s, df in bars.items()}
+    sigs = fn(bars, params)  # `fn` es una función de panel (strategies.resolve_signal_fn)
     bb = {}
     for s, df in bars.items():
         lo = max(a, entry_from[s]) if s in entry_from else a
@@ -205,7 +205,7 @@ def run_backtest(
         data = load_bars(
             syms,
             "1Day",
-            start=s["data"]["history_start"],
+            start=sc.get("history_start", s["data"]["history_start"]),
             source=src,
             cache_dir=ROOT / s["data"]["cache_dir"],
         )
@@ -219,7 +219,7 @@ def run_backtest(
     cfg = make_cfg(s, sc, costs)
     if entry_delay:
         cfg = replace(cfg, entry_delay=int(entry_delay))
-    fn = SIGNAL_STRATEGIES[strategy]
+    fn = resolve_signal_fn(strategy)
     last = min(df.index[-1] for df in bars.values())
     entry_from = None
     if "start" in sc:
