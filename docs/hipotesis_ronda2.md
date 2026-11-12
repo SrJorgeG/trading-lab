@@ -115,6 +115,8 @@ Añadidos de esta ronda:
 ---
 
 ### H6 — `tom_etf`
+> **APARCADA el 2026-11-12 (enmienda E15):** no se implementa ni se ejecuta en la ronda 2. La ficha
+> se conserva tal cual como registro.
 - **Idea en una frase:** estar comprado en bolsa solo alrededor del cambio de mes (desde el último día del mes hasta el tercero del siguiente) y en efectivo el resto del tiempo.
 - **Razón económica / evidencia:** efecto "cambio de mes" (*turn of the month*): Ariel (1987, *Journal of Financial Economics*), Lakonishok y Smidt (1988, *Review of Financial Studies*, 90 años del Dow) y McConnell y Xu (2008, *Financial Analysts Journal*), que lo encuentran en EE. UU. y en la mayoría de los países que miran. Explicación más citada (Ogden, 1990, *Journal of Finance*): nóminas, aportaciones a planes de pensiones y pagos se concentran a fin de mes y una parte entra en bolsa esos días. Quien paga es quien vende sin prisa justo antes de esa entrada de dinero. Conocimiento propio. Dos avisos honrados: (1) es una anomalía de calendario conocida desde hace décadas y puede haberse gastado; el IS (2007–2020) es **posterior** a las publicaciones, lo que lo convierte en una prueba más seria que para una idea recién minada; (2) la ganancia por operación es pequeña: es la candidata con más riesgo de morir como H3, por costes o por entrar tarde.
 - **Universo y timeframe:** `SPY` (grandes de EE. UU.), `IWM` (pequeñas de EE. UU.), `EFA` (desarrollados fuera de EE. UU.). Tres activos, tres huecos: no hace falta ordenar. Velas diarias; hay algo que hacer **dos días al mes**.
@@ -288,6 +290,8 @@ El listón es alto. Los criterios 16 y 17 juntos piden, en la práctica, algo as
 5. Si no pasa ninguna: "ninguna apta" y **no se opera**. Los peldaños que no se hayan ejecutado quedan intactos.
 
 ### Decisiones tomadas por prudencia — PENDIENTE DE JORGE
+> **DECIDIDAS el 2026-11-12** (Opus, por delegación de Jorge): P7–P13 confirmadas; ver enmiendas
+> E15–E22 al final y `docs/decisiones_ronda2.md`.
 Jorge puede cambiarlas **solo antes de que se ejecute el primer backtest IS de la ronda 2**, con una enmienda fechada al final de este archivo.
 
 | # | Decisión | Opción tomada (prudente) | Alternativa |
@@ -519,8 +523,91 @@ letra de este documento o de `docs/tareas_sonnet.md`:
 - El resto (D5, D8, D11–D14) son detalles de informe y de código sin efecto sobre las reglas.
 
 ### Preguntas abiertas para Jorge tras la auditoría (detalle en `docs/auditoria_ronda2.md` §5)
+> **DECIDIDAS el 2026-11-12** (Opus, por delegación de Jorge): P14 → (a) y H6 aparcada (E15);
+> P15 → (a) con salvaguardas (E18); P16 → requisito previo del IS (E16). Ver la enmienda siguiente.
 | # | Decisión | Opción tomada mientras no digas otra cosa | Alternativa |
 |---|---|---|---|
 | **P14** | H6 con el efectivo al 0 % frente a las letras (amplía P7) | Se deja como está; H6 probablemente no llegue a los criterios 2 y 16. | Juzgar el criterio 16 con el efectivo rindiendo como la caja (suaviza). |
 | **P15** | Regla dura 5 cuando venta y compra van a la misma apertura | Se cumple si la exposición tras ejecutarse las órdenes es ≤ 100 %; el ejecutor (paso 5) recorta la compra con un margen del 3 %. | Comprar solo cuando la venta esté ejecutada: obliga a simular la compra una sesión más tarde **desde el primer IS**. |
 | **P16** | Operabilidad en Alpaca de los 24 ETFs | Sin verificar en la auditoría (herramienta sin permiso); lo hace R2-3 antes del IS. | — |
+
+### 2026-11-12, 15:32 (hora de Madrid) — decisiones P7–P16 y recomendaciones del informe, ANTES de ejecutar ningún backtest de H5–H7
+**Decidido por Opus por delegación de Jorge, 2026-11-12.** Detalle y motivos en
+`docs/decisiones_ronda2.md`. Sigue sin existir código, datos ni informes de las candidatas.
+**Ninguna regla dura cambia, ningún criterio de §4 se suaviza** y las dos decisiones de Jorge del
+2026-11-11 no se tocan. Jorge puede revertir estas enmiendas él mismo solo antes del primer IS
+(E17: también después, pero solo en persona).
+
+**E15 (P14, P7; informe M8) — efectivo al 0 % y H6 APARCADA.** El efectivo rinde 0 % en todos los
+criterios (opción (a) de P14). **H6 `tom_etf` queda aparcada:** no se implementa ni se ejecuta en
+esta ronda. Consecuencias: (a) la ronda 2 tiene dos candidatas, H5 y H7; orden de E2: H5, H7;
+(b) §5.3 y §5.4 (preferencia y cartera combinada H6 + sectores) y las enmiendas E5, E6 y E12 quedan
+sin efecto; (c) presupuesto: 30 variantes por candidata, **60 en total**; H6 cuenta 0 variantes
+probadas; (d) `MDY` sale de los datos a descargar (`EWJ` sigue, es réplica de H5/H7); (e) aparcada
+no es "pendiente": retomarla es abrir una ronda nueva y queda sujeta a E17. Sus tramos no se
+ejecutan.
+
+**E16 (P8–P12, P16) — confirmadas tal como estaban.** P8: paper de 12 meses, revisión a los 6 solo
+de fidelidad y seguridad. P9: cripto fuera; su OOS sigue intacto. P10: calibración a caída IS
+≤ 12 %. P11: caja = letras a 3 meses (E10); `IEF` solo en 16d. P12: +2,0 puntos. P7: sin ETF de
+letras. P16: `get_asset` de todos los símbolos es requisito previo del IS; réplica no operable →
+se quita sin sustituir; principal no operable → se para y decide Jorge.
+
+**E17 (informe M4) — tope de rondas.** La ronda 2 es la **última ronda de búsqueda con backtest**
+sobre datos históricos. No se añaden candidatas a esta ronda. Si ninguna queda apta para paper:
+"ninguna apta", no se opera y **no hay ronda 3** (ni de cripto, ni con H6, ni con ideas nuevas).
+Solo Jorge, en persona y con una decisión fechada que lo diga expresamente, puede abrir otra
+ronda; esta enmienda no se puede levantar por delegación. El paper (§3.6) sigue siendo la única
+prueba que aprueba.
+
+**E18 (P15) — regla dura 5 en la apertura real.** Se adopta la opción (a): la regla se cumple si,
+una vez ejecutadas las órdenes, la exposición bruta es ≤ 100 % del equity y nunca se usa margen.
+Salvaguardas obligatorias para el paso 5 (más estrictas que la lectura literal): (1) la cuenta
+paper debe tener `max_margin_multiplier = "1"`, `no_shorting = true` y
+`max_options_trading_level = 0`; el ejecutor lo comprueba al arrancar y **se niega a arrancar** si
+no (como `guard.py`); (2) se envían primero las ventas y después las compras; (3) la compra se
+recorta si `posiciones resultantes valoradas al cierre anterior × 1,03 > equity`; (4) si el broker
+rechaza una compra por falta de poder de compra, no se reintenta ese día: se anota en el diario
+como diferencia frente al backtest (regla dura 8: lo no cubierto → no operar). El backtest no
+cambia.
+
+**E19 (P13; informe B2) — rama.** Se sigue en `ronda2/hipotesis`. Antes del primer IS, avance
+rápido **local** de `main` hasta la rama de trabajo (sin push).
+
+**E20 (informe M1) — trazabilidad en git.** (a) `docs/veredicto.md` corrige con nota fechada el
+commit de congelación de H4: `14aed91` → `79a2881` (mismo cambio en
+`config/strategies/donchian_etf.toml`; solo difieren tres ficheros de diagnóstico de datos;
+comprobado con `git diff` el 2026-11-12). (b) Etiquetas locales `ronda1/congelacion-h4` (→
+`79a2881`) y `ronda1/congelacion-h4-original` (→ `14aed91`, para conservar el objeto). (c) Ronda 2:
+etiqueta anotada `ronda2/pre-is` en el commit desde el que se lanza el IS y `ronda2/congelacion` en
+el commit único de E2. (d) Prohibido rebase, amend, reset o force sobre cualquier commit
+etiquetado o anterior a él. (e) Cada fila de `reports/oos_log.csv` y cada línea de IS en
+`docs/registro_pruebas.md` llevan el hash completo del commit de `HEAD`.
+
+**E21 (informe A2) — candado de los tramos.** R2-5 implementado **y probado** pasa a ser requisito
+previo del primer IS (junto a R2-1 y R2-3/R2-18). Clave de un solo uso: la de D4 (estrategia,
+tramo, hash de `params` + `risk_per_trade`, costes, retraso, tipo) más el commit. Sin `--force`. El
+script se niega a ejecutar cualquier tramo, IS incluido, si hay cambios sin commitear en `config/`,
+`src/` o `scripts/`. Retroactivo: cualquier modo distinto de IS (`oos`, `full`, `replica`,
+`holdout_*`) sobre una estrategia con `status = "rechazada"` (H1–H4) o `"aparcada"` (H6) se rechaza.
+
+**E22 (informe A1, A3, M2, M3, M5, M6, B3) — informativos y procedimiento.**
+- **Test de potencia (A1):** estrategia sintética con ventaja conocida pasada por todos los
+  criterios de §4; frecuencia de aprobado. Se hace tras R2-10 y se escribe **antes** del primer IS.
+  Informativo: **no cambia ningún criterio**, salga lo que salga.
+- **Equity de referencia (A3):** todas las reglas duras se miden sobre el equity del experimento
+  (10.000 $ virtuales + resultado de sus operaciones); el tamaño usa
+  `min(equity del experimento, equity de la cuenta)`. Si el kill switch salta durante el paper, la
+  candidata suspende el punto (c) de §3.6; borrar `KILL_SWITCH` no reinicia el examen. Va a
+  `STRATEGY.md` en el paso 4.
+- **Monos (M2):** el informe muestra nº de operaciones y exposición media de cada tipo de mono
+  frente a la candidata. Informativo.
+- **Walk-forward congelado (M3):** además del criterio 5, informe del resultado de los parámetros
+  por defecto en las mismas 8 ventanas. Informativo; no es una variante nueva.
+- **Aperturas (M6):** R2-18 cuenta por símbolo y año los días con apertura = cierre anterior y con
+  apertura fuera de [mínimo, máximo]. Si en un símbolo principal ocurre en > 5 % de las sesiones de
+  `holdout_old`, se para y se decide por enmienda antes del IS.
+- **Revisión independiente (M5):** el veredicto de la ronda 2 lo revisa alguien distinto de Fable
+  antes de darse por cerrado.
+- **Contaminación (B3):** las baselines usan datos hasta el 2026-11-10; se añaden al inventario
+  (§0.4) los 10 días posteriores al 2026-10-31.

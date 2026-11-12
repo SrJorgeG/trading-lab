@@ -212,3 +212,44 @@ especificación**.
   - `get_asset` de Alpaca para los 24 símbolos: campos `tradable` y `fractionable`. Si un símbolo
     de réplica no es operable se anota para quitarlo; si no lo es uno principal, **parar y avisar**.
   - Base de cotización de la serie de caja (descuento o rentabilidad), con la fuente.
+
+## Ronda 2 — decisiones del 2026-11-12, 15:32 (enmiendas E15–E22)
+
+**Decidido por Opus por delegación de Jorge, 2026-11-12** (`docs/decisiones_ronda2.md`). Donde
+choque con las secciones anteriores, **manda esta**. Las prohibiciones siguen igual.
+
+**No se hacen (H6 aparcada, E15):** R2-8 entero · el modo `window` de R2-9 · R2-12 · R2-15 · el
+Monte Carlo por meses de R2-17 · los recuentos de días de `tom_etf` de R2-18 · la descarga de
+`MDY` en R2-3. No borres nada de lo que ya exista; si algo de H6 llegara a estar escrito, se deja
+sin registrar en `SIGNAL_STRATEGIES`.
+
+**Orden nuevo de requisitos previos del primer IS:** R2-1, R2-2, R2-3 + R2-18, **R2-5 completo y
+probado** (E21), R2-6, R2-7, R2-9 (`rank` + persistente), R2-10, R2-14, R2-16, R2-17, R2-19, R2-13.
+
+- [ ] R2-5 (ampliado, E20/E21): columna `commit` (hash completo de `HEAD`) en `oos_log.csv` y en
+      las líneas de IS de `docs/registro_pruebas.md`; abortar si
+      `git status --porcelain -- config src scripts` no está vacío (cualquier tramo, IS incluido);
+      rechazar cualquier modo distinto de IS sobre estrategias `rechazada` o `aparcada` (también
+      `--mode oos`/`full` del runner de la ronda 1); `status = "aparcada"` válido. Tests: árbol
+      sucio → error; `donchian_etf` y `donchian_crypto` en `--mode oos` → error.
+- [ ] R2-10 (ampliado, E22): nº de operaciones y exposición media de cada tipo de mono frente a la
+      candidata; walk-forward informativo con los parámetros por defecto en las 8 ventanas (no
+      decide el criterio 5).
+- [ ] R2-18 (ampliado, E22/M6): por símbolo y año, nº de días con apertura = cierre anterior y con
+      apertura fuera de [mínimo, máximo]. Solo recuentos. Si en un sector supera el 5 % de las
+      sesiones de `holdout_old`, **parar y avisar**.
+- [ ] R2-19 (nuevo, E22/A1). **Test de potencia sintético**, sin datos reales: series inventadas
+      de 9 activos donde la fuerza de 6 meses tiene una ventaja conocida (y otra versión sin
+      ventaja), pasadas por los criterios de §4 A que se puedan calcular en sintético; frecuencia
+      de aprobado en N series (semilla 42). Herramienta + informe `reports/potencia/`. Se ejecuta y
+      se escribe **antes** del primer IS. Informativo: no cambia ningún criterio.
+- [ ] E19: antes del primer IS, avance rápido **local** de `main` hasta `ronda2/hipotesis`
+      (`git checkout main && git merge --ff-only ronda2/hipotesis`), solo con el visto bueno de
+      Jorge. Sin push.
+- [ ] E20: etiqueta anotada `ronda2/pre-is` en el commit desde el que Fable lance el IS (la pone
+      Fable). Prohibido rebase/amend/reset/force sobre commits etiquetados o anteriores.
+- Para el paso 5 (solo anotado, E18 y E22): el ejecutor comprueba al arrancar
+  `max_margin_multiplier == "1"`, `no_shorting == true` y `max_options_trading_level == 0` en la
+  cuenta paper y se niega a arrancar si no; ventas antes que compras; recorte de la compra con
+  margen del 3 %; sin reintento si se rechaza; reglas medidas sobre el equity del experimento y
+  tamaño con `min(equity del experimento, equity de la cuenta)`.

@@ -71,6 +71,22 @@ después. **Ninguna suaviza un criterio de §4.** Resumidas como enmienda **E14*
 | D13 | «Efectivo rindiendo como la caja» (informativo) se calcula **a posteriori** sobre la curva ya simulada; no se vuelve a simular. | Es informativo; re-simular cambiaría tamaños y abriría otra variante. |
 | D14 | `calibrate_risk` deja de tener límite por defecto; los 4 TOML de la ronda 1 ganan la clave `calibration_dd_limit = 0.10` (lo que ya se usó). | «Nada de números mágicos»; H-2. |
 
+## 0.2 Decisiones del 2026-11-12, 15:32 (hora de Madrid) — enmiendas E15–E22, antes del primer IS
+
+**Decidido por Opus por delegación de Jorge, 2026-11-12** (`docs/decisiones_ronda2.md`; texto
+completo en `docs/hipotesis_ronda2.md`, «Enmiendas»). Donde choque con el resto de este documento,
+**manda esta sección**.
+
+| Enmienda | Efecto sobre estas especificaciones |
+|---|---|
+| E15 — H6 aparcada | **No se implementan:** R2-8 entero (`tom_etf.py`, `calendar.py`, `tom_etf.toml`), el modo `window` de R2-9, R2-12 (cartera combinada), R2-15 (C5–C9), el Monte Carlo por meses de R2-17 y los recuentos de días de `tom_etf` de R2-18 (DA8). D2, D6 y D9 quedan sin efecto. `MDY` sale de R2-3. En la fase 2 del §1 desaparece la rama de R2-8; la fase 4 solo necesita R2-5, R2-6 y R2-7. Se añade `status = "aparcada"` como valor válido (lo usa la guarda de E21). |
+| E17 — tope de rondas | Nada que programar. |
+| E18 — regla 5 en vivo | Nada en el backtest. Para el paso 5: comprobación al arrancar de `max_margin_multiplier == "1"`, `no_shorting` y `max_options_trading_level == 0` (se niega a arrancar si no), ventas antes que compras, recorte del 3 %, sin reintento si se rechaza. Solo anotarlo; el ejecutor no es de esta ronda. |
+| E19 — rama | Avance rápido local de `main` antes del primer IS (lo hace Jorge o Sonnet con su visto bueno). |
+| E20 — trazabilidad | R2-5.5: columna nueva `commit` (hash completo de `HEAD`) en `oos_log.csv`; `append_registry` añade el commit en las líneas de IS. |
+| E21 — candado | R2-5 pasa de la fase 3 a **requisito previo del primer IS**, con sus tests (R2-17, guarda). Además de D4: la clave incluye el commit; el script aborta (código ≠ 0) si `git status --porcelain -- config src scripts` no está vacío, en cualquier tramo, IS incluido; cualquier modo distinto de IS sobre estrategias `rechazada` o `aparcada` se rechaza (también `--mode oos`/`full` del runner de la ronda 1). Tests nuevos: árbol sucio → error; `donchian_etf` en `--mode oos` → error; `donchian_crypto` en `--mode oos` → error. |
+| E22 — informativos | R2-10: nº de operaciones y exposición media de cada tipo de mono frente a la candidata; walk-forward informativo con los parámetros por defecto en las 8 ventanas. R2-18: recuento por símbolo y año de aperturas = cierre anterior y aperturas fuera de [mínimo, máximo] (sin rentabilidades); umbral de parada 5 % en `holdout_old`. **R2-19 nuevo:** test de potencia sintético (ver `docs/tareas_sonnet.md`). |
+
 ---
 
 ## 1. Orden recomendado y dependencias
@@ -92,7 +108,9 @@ Fase 7  R2-13                              (verde + informe para Fable)
 - Un commit por tarea (o por pareja tarea + sus tests), en español, con `ruff` y `pytest` en
   verde en cada uno.
 - **Antes del primer IS (lo lanza Fable, no Sonnet):** R2-1 y R2-3/R2-18 hechos y la auditoría
-  del motor repetida sobre el código nuevo.
+  del motor repetida sobre el código nuevo. **Desde el 2026-11-12 (§0.2):** también R2-5 probado
+  (E21), R2-19 escrito (E22), `main` avanzada (E19) y etiqueta `ronda2/pre-is` (E20). R2-8,
+  el modo `window` de R2-9, R2-12 y R2-15 no se hacen (E15).
 
 Mapa de ficheros (nuevos en **negrita**):
 
@@ -1385,8 +1403,8 @@ el PC de Jorge; ninguna rentabilidad, media ni gráfico en ellos.
 
 - Lanzar los IS, congelar (`frozen = true`), recorrer la escalera y escribir el veredicto:
   **Fable**, paso 3, tras auditar el código nuevo.
-- Decisiones P14–P16 de `docs/auditoria_ronda2.md`: **Jorge**. Mientras no diga otra cosa
-  valen las opciones tomadas; P15 (b) obligaría a cambiar el simulador **antes** del primer IS.
+- Decisiones P14–P16 de `docs/auditoria_ronda2.md`: **decididas el 2026-11-12** (Opus, por
+  delegación de Jorge): P14 (a) + H6 aparcada, P15 (a) con salvaguardas, P16 requisito previo. Ver §0.2.
 - El ejecutor diario (paso 5): solo se deja preparada `calendar.live_sessions`.
 - No se ha verificado en esta sesión la operabilidad en Alpaca, ni la base de `^IRX`, ni la
   dirección exacta del CSV de FRED: lo hace Sonnet en R2-4 y R2-18 y lo documenta.
