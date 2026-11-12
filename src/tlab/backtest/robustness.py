@@ -9,11 +9,23 @@ import numpy as np
 import pandas as pd
 
 
-def param_grid(params: dict, keys: list[str], pct: float = 0.25) -> list[dict]:
-    """Combinaciones {−pct, 0, +pct} de cada parámetro numérico de `keys` (enteros redondeados)."""
+def param_grid(
+    params: dict, keys: list[str], pct: float = 0.25, explicit: dict[str, list] | None = None
+) -> list[dict]:
+    """Combinaciones {−pct, 0, +pct} de cada parámetro numérico de `keys` (enteros redondeados).
+    Si `explicit` trae valores para una clave, se usan tal cual (deben incluir el valor por
+    defecto; si no, ValueError): D1, valores literales del pre-registro. Python redondea
+    94,5 a 94, así que con ±25 % lookback=126 daría {94, 126, 158} y no {95, 126, 158}."""
+    explicit = explicit or {}
     axes = []
     for k in keys:
         v = params[k]
+        if k in explicit:
+            vals = list(explicit[k])
+            if v not in vals:
+                raise ValueError(f"rejilla explícita de {k}: falta el valor por defecto {v}")
+            axes.append([(k, x) for x in vals])
+            continue
         vals = [v * (1 - pct), v, v * (1 + pct)]
         if isinstance(v, int):
             vals = sorted({max(1, int(round(x))) for x in vals})

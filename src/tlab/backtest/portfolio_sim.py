@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
-from tlab.backtest.costs import CostModel
+from tlab.backtest.costs import CostModel, CostSchedule
 from tlab.config import asset_class_of
 from tlab.risk import apply_limits, check_kill_switch, position_size
 
@@ -40,6 +40,7 @@ class SimConfig:
     )
     entry_delay: int = 0  # velas extra de retraso (prueba de robustez)
     max_position_fraction: float | None = None  # tope por posición (equity/3); None = sin tope
+    cost_schedule: CostSchedule | None = None  # E11: costes por fecha (si no, `costs` fijo)
 
 
 @dataclass
@@ -95,10 +96,16 @@ def simulate(
     peak = cfg.initial_equity
     kill_pending, killed, kill_date = False, False, None
 
+    def cm_at(s: str, t) -> CostModel:
+        """Costes del activo en la fecha `t` (E11: con calendario, los de esa fecha)."""
+        if cfg.cost_schedule is not None:
+            return cfg.cost_schedule.at(t)[ac[s]]
+        return cfg.costs[ac[s]]
+
     def close_pos(s: str, t, ref_price: float, reason: str) -> None:
         nonlocal cash
         p = pos.pop(s)
-        cm = cfg.costs[ac[s]]
+        cm = cm_at(s, t)
         fill = cm.fill_price(ref_price, "sell")
         comm = cm.commission(p["qty"], fill)
         cash += p["qty"] * fill - comm
@@ -160,7 +167,7 @@ def simulate(
                 o = bar[s]["open"]
                 if not (np.isfinite(stop) and o > stop):
                     continue
-                cm = cfg.costs[ac[s]]
+                cm = cm_at(s, t)
                 qty = position_size(
                     mtm, o, stop, cfg.risk_per_trade, cm, ac[s], cfg.allow_fractional
                 )

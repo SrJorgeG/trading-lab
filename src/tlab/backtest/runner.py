@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import csv
-import hashlib
-import json
 import tomllib
 from dataclasses import replace
 from datetime import datetime
@@ -17,6 +14,14 @@ import pandas as pd
 from tlab import metrics
 from tlab.backtest.allocation_sim import simulate_weights
 from tlab.backtest.costs import cost_models
+from tlab.backtest.guards import (
+    GitProbe,
+    OOSGuardError,
+    append_log_row,
+    params_hash,
+    read_log,
+    require_not_blocked,
+)
 from tlab.backtest.portfolio_sim import SimConfig, simulate
 from tlab.backtest.robustness import (
     calibrate_risk,
@@ -29,48 +34,60 @@ from tlab.backtest.robustness import (
     param_grid,
     subperiods,
 )
+from tlab.backtest.tranches import IS_MODES, is_round2
 from tlab.backtest.walkforward import fixed_windows, make_windows, pick_best
 from tlab.config import ROOT, asset_class_of, load_settings, load_strategy_config
 from tlab.data.loader import load_bars
 from tlab.report import MADRID, append_registry, write_report
 from tlab.strategies import resolve_signal_fn
 
-MODES = ("is", "wf", "oos", "full", "robust")
+MODES = ("is", "wf", "oos", "full", "robust", "replica", "holdout_old", "holdout_new")
 
-
-class OOSGuardError(RuntimeError):
-    """Uso indebido del out-of-sample."""
-
-
-def params_hash(params: dict) -> str:
-    return hashlib.sha256(json.dumps(params, sort_keys=True).encode()).hexdigest()[:12]
+# OOSGuardError y params_hash viven en guards.py (los comparte tranches.py); se reexportan aquí
+# porque el resto del repo y los tests los importan desde runner.
+__all__ = ["OOSGuardError", "params_hash"]
 
 
 def check_oos_guard(
-    log_path: Path, strategy: str, params: dict, confirm: bool, force: bool
+    log_path: Path,
+    strategy: str,
+    params: dict,
+    confirm: bool,
+    force: bool,
+    *,
+    tranche: str = "oos",
+    costs: str = "base",
+    entry_delay: int = 0,
+    kind: str = "candidata",
+    report: str = "",
+    commit: str = "",
 ) -> None:
-    """Exige --confirm-oos; si ya hubo OOS con otros parámetros, exige --force. Registra."""
+    """Exige --confirm-oos; si ya hubo OOS con otros parámetros, exige --force. Registra
+    (migrando la cabecera antigua de 4 columnas si hace falta)."""
     if not confirm:
         raise OOSGuardError("--mode oos exige --confirm-oos (el OOS se mira UNA vez)")
     h = params_hash(params)
-    prev = []
-    if log_path.exists():
-        with open(log_path, encoding="utf-8") as f:
-            prev = [r for r in csv.DictReader(f) if r["strategy"] == strategy]
+    prev = [r for r in read_log(log_path) if r["strategy"] == strategy]
     if any(r["params_hash"] != h for r in prev) and not force:
         raise OOSGuardError(
             "Ya hay un OOS con otros parámetros para esta estrategia; "
             "usa --force solo si de verdad procede (queda anotado)"
         )
-    new = not log_path.exists()
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(log_path, "a", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        if new:
-            w.writerow(["date_madrid", "strategy", "params_hash", "forced"])
-        w.writerow(
-            [datetime.now(MADRID).isoformat(timespec="minutes"), strategy, h, bool(force and prev)]
-        )
+    append_log_row(
+        log_path,
+        {
+            "date_madrid": datetime.now(MADRID).isoformat(timespec="minutes"),
+            "strategy": strategy,
+            "params_hash": h,
+            "forced": str(bool(force and prev)),
+            "tranche": tranche,
+            "costs": costs,
+            "entry_delay": str(int(entry_delay)),
+            "kind": kind,
+            "report": report,
+            "commit": commit,
+        },
+    )
 
 
 def periods_per_year(symbols: list[str]) -> int:
@@ -176,9 +193,12 @@ def run_backtest(
     settings: dict | None = None,
     strat_cfg: dict | None = None,
     entry_delay: int = 0,
+    confirm_tranche: bool = False,
+    git_probe: GitProbe | None = None,
 ) -> Path:
-    """Ejecuta un backtest y devuelve la ruta del resumen.md.
-    `entry_delay`: velas extra de retraso en la entrada (estrés del criterio 8)."""
+    """Ejecuta un backtest y devuelve la ruta del resumen.md (en `replica`, la de criterio15.md).
+    `entry_delay`: velas extra de retraso en la entrada (estrés del criterio 8).
+    `confirm_tranche` y `git_probe` solo se usan en la ronda 2 (`git_probe` se inyecta en tests)."""
     if mode not in MODES:
         raise ValueError(f"modo desconocido: {mode}")
     s = settings or load_settings()
@@ -190,6 +210,27 @@ def run_backtest(
             params.update(tomllib.load(f).get("params", {}))
     reports_dir = reports_dir or ROOT / "reports"
     registry = registry or ROOT / "docs" / "registro_pruebas.md"
+    # E21: las estrategias rechazadas o aparcadas solo ejecutan modos de IS (también la ronda 1).
+    require_not_blocked(sc, mode in IS_MODES)
+    if is_round2(sc):
+        from tlab.backtest.round2 import run_round2
+
+        return run_round2(
+            strategy,
+            mode,
+            sc,
+            s,
+            params,
+            costs_mode=costs_mode,
+            entry_delay=entry_delay,
+            confirm_tranche=confirm_tranche,
+            data=data,
+            reports_dir=reports_dir,
+            registry=registry,
+            git_probe=git_probe,
+        )
+    if mode in ("replica", "holdout_old", "holdout_new"):
+        raise ValueError(f"el modo {mode} solo existe para estrategias de la ronda 2")
     # OOS: se mira UNA vez. En las candidatas, "full" también incluye el OOS → mismo candado.
     if mode == "oos" or (cand and mode == "full"):
         check_oos_guard(reports_dir / "oos_log.csv", strategy, params, confirm_oos, force)
@@ -407,7 +448,7 @@ def walk_forward_fixed(bars, params, sc, fn, cfg, first, split, ppy, entry_from=
     w = sc["walkforward"]
     keys = list(sc.get("robust_keys", []))
     wins = fixed_windows(first, w["first_test"], int(w["test_months"]), int(w["n_windows"]), split)
-    grid = param_grid(params, keys)
+    grid = param_grid(params, keys, explicit=sc.get("robust_grid"))
     run = partial(run_signals, entry_from=entry_from)
     rows = []
     for win in wins:
@@ -629,7 +670,7 @@ def robust_section(
 
     st0 = row("central", base)
     neigh = []
-    for p in param_grid(params, keys):
+    for p in param_grid(params, keys, explicit=sc.get("robust_grid")):
         if p != params:
             st = row(
                 ", ".join(f"{k}={p[k]}" for k in keys), run(bars, p, fn, cfg, a, b), p, "rejilla"
