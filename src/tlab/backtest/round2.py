@@ -63,6 +63,7 @@ def run_round2(
     reports_dir: Path,
     registry: Path,
     git_probe: GitProbe | None = None,
+    cash_rate: pd.Series | None = None,
 ) -> Path:
     """Backtest de un tramo. Devuelve resumen.md (o criterio15.md en `replica`)."""
     if mode == "oos":
@@ -115,6 +116,10 @@ def run_round2(
             source=src,
             cache_dir=ROOT / s["data"]["cache_dir"],
         )
+        if cash_rate is None:  # R2-4: letras a 3 meses (datos de mercado, no un backtest)
+            from tlab.data.cash import load_tbill_rate
+
+            cash_rate, _info = load_tbill_rate(s, ROOT / s["data"]["cache_dir"])
     else:
         data_src = "datos pasados por el llamador (tests)"
     end_ts = pd.Timestamp(sc["end"], tz="UTC")
@@ -211,6 +216,7 @@ def run_round2(
             log_path=reports_dir / "oos_log.csv",
             strategy=strategy,
             h=h,
+            cash_rate=cash_rate,
         )
     )
     data_info = "\n".join(

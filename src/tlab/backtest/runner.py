@@ -195,6 +195,7 @@ def run_backtest(
     entry_delay: int = 0,
     confirm_tranche: bool = False,
     git_probe: GitProbe | None = None,
+    cash_rate: pd.Series | None = None,
 ) -> Path:
     """Ejecuta un backtest y devuelve la ruta del resumen.md (en `replica`, la de criterio15.md).
     `entry_delay`: velas extra de retraso en la entrada (estrés del criterio 8).
@@ -228,6 +229,7 @@ def run_backtest(
             reports_dir=reports_dir,
             registry=registry,
             git_probe=git_probe,
+            cash_rate=cash_rate,
         )
     if mode in ("replica", "holdout_old", "holdout_new"):
         raise ValueError(f"el modo {mode} solo existe para estrategias de la ronda 2")
