@@ -197,6 +197,7 @@ La réplica no es independiente (todas las bolsas caen juntas), así que no cuen
 3. `f` queda congelada para todos los peldaños y para el paper.
 
 ### 3.4 Monos a medida (criterio 14 y réplica), 1.000 simulaciones, semilla 42
+> Ampliado y precisado por las enmiendas E4 y E5 (2026-11-12), al final del archivo.
 - **H5 y H7:** mismas reglas, mismo filtro `apto`, mismos stops, tamaños y costes; lo único que cambia es que el **orden** de los aptos se sortea en cada revisión (se sortea una vez por mes y se usa para `puesto` y `rank`). Pregunta que contesta: ¿elegir por fuerza (o por calma) es mejor que elegir 3 sectores aptos al azar?
 - **H6:** mismos activos, stops, tamaños y costes; en cada mes se sortea **la sesión de entrada** entre todas las del mes (la misma para los 3 activos) y se sale en la apertura 4 sesiones después de la de entrada. Pregunta: ¿el cambio de mes es mejor que 4 sesiones cualesquiera?
 - Estadístico: Sharpe del tramo. p = proporción de monos con Sharpe ≥ el real.
@@ -315,6 +316,7 @@ La interfaz actual recibe **un** activo y no puede ordenar entre activos. Se añ
 - Los tests de look-ahead (truncar y "envenenar" el futuro) se extienden a este tipo.
 
 ### 6.2 `sector_mom` (H5) y `sector_lowvol` (H7)
+> «Índice común» queda precisado por la enmienda E7 (2026-11-12), al final del archivo.
 - Un módulo con un parámetro `rank_by ∈ {"mom", "lowvol"}`; dos TOML.
 - `params` H5: `rank_by="mom", lookback=126, top_n=3, keep_n=5, atr_mult=3.0, atr_n=20`. H7: igual con `rank_by="lowvol"`. `robust_keys = ["lookback", "atr_mult", "keep_n"]`.
 - En cada día de revisión `t` (primera sesión del mes en el índice común): `mom = close/close.shift(lookback) − 1`; `apto = (mom > 0) & atr.notna()`; `clave = mom` (H5) o `−std(ln rentabilidades, ventana lookback, ddof=1)` (H7); `puesto` = orden de los aptos por `clave` descendente, empates por símbolo. `entry = revisión & apto & (puesto ≤ top_n)`; `exit = revisión & (~apto | (puesto > keep_n))`; `stop_price = close − atr_mult × ATR`; `rank = clave`. Fuera de los días de revisión: todo `False`.
@@ -335,6 +337,7 @@ Casos a mano (`lookback=2, top_n=2, keep_n=3, atr_mult=3, atr_n=1`). Fechas 2024
 - **Caso S4 (sin mirar al futuro):** calcular con las velas hasta el 02-01 da ese día las mismas filas que con todas.
 
 ### 6.3 `tom_etf` (H6)
+> **Ojo:** las fórmulas de `entry`/`exit` y los casos C1–C3 de abajo están corregidos por la enmienda E6 (2026-11-12), al final del archivo. Manda la enmienda.
 - Función por activo de siempre, `generate_signals(bars, params)`, más el calendario: `params["sessions"]` = `DatetimeIndex` con todas las sesiones (pasadas y futuras programadas), que inyecta el runner (no va en el TOML). Backtest: índice de SPY de la caché. En vivo: `get_calendar`.
 - `params`: `entry_before_end=1, exit_day=3, atr_mult=3.0, atr_n=20`. `robust_keys = ["entry_before_end", "exit_day", "atr_mult"]` con los valores de §2.
 - Con `sessions` agrupadas por año-mes: `quedan` = sesiones posteriores a `t` en su mes; `ordinal` = posición de `t` en su mes (desde 1). `entry = (quedan == entry_before_end) & atr.notna()`; `exit = (ordinal == exit_day)`; `stop_price = close − atr_mult × ATR`; `rank = 0`.
@@ -357,4 +360,140 @@ Casos a mano (`atr_mult=3, atr_n=1`):
 7. Banda de resultados esperados para el paper (§3.6 b).
 
 ## Enmiendas
-(vacío)
+
+### 2026-11-12, 02:30 (hora de Madrid) — auditoría crítica, ANTES de ejecutar ningún backtest de H5–H7
+Origen: `docs/auditoria_ronda2.md` (cada enmienda cita su hallazgo). En este momento no existe
+código de las candidatas, ni datos descargados de sus universos, ni ningún informe suyo.
+**Ningún criterio de §4 se suaviza**; E4 y E10 endurecen. Jorge o Fable pueden revertir cualquiera
+de estas enmiendas solo antes del primer backtest IS de la ronda 2.
+
+**E1 (hallazgo M1) — papel del tramo reservado antiguo.** En §3.1, donde dice "Prueba principal
+en backtest", léase: "**veto y coherencia en otro régimen de mercado**". Las muestras de los
+trabajos que motivan H5–H7 cubren en todo o en parte 2000–2007, así que ese tramo no es virgen
+para las ideas, solo para este proyecto; para H6, el tramo posterior a la publicación es el IS.
+Ningún peldaño de backtest "demuestra": todos pueden vetar. La única prueba limpia es el paper
+(§3.6). Los criterios de §4.C no cambian.
+
+**E2 (M2) — orden entre candidatas.** Primero se completa la parte A (IS) de **las tres**
+candidatas. Después, **un único commit** congela parámetros y `f` de todas las que sigan vivas.
+Solo entonces empieza el peldaño 1 de cualquiera. Tras ese commit no se ejecuta ningún IS más.
+Los peldaños 1–3 se recorren candidata por candidata en el orden H5, H6, H7. Se declara que los
+tramos reservados de H7 no son independientes de los de H5 (mismos 9 sectores).
+
+**E3 (M3) — réplica a ciegas y contaminación.** Del informe de la réplica solo se leen las
+cifras del criterio 15 (expectancy, Sharpe, percentil frente a los monos) y el nº de
+operaciones, hasta que la candidata haya terminado los peldaños 2–3 o haya muerto. El script
+escribe esas cifras en un archivo aparte (`criterio15.md`) y el detalle en otro que no se abre
+antes. Si una candidata muere en la réplica, sus tramos reservados no ejecutados **no** se
+consideran intactos para esa familia de ideas: se anota en el inventario de contaminación de la
+ronda siguiente.
+
+**E4 (A1) — segundo tipo de mono para H5 y H7; criterios 14 y 15 contra los dos.**
+Los monos de §3.4 ("sorteo mensual") rotan mucho más que la candidata, porque la salida depende
+del puesto y el puesto se sortea de nuevo cada mes. Se mantienen y se añade:
+- **Mono persistente:** al empezar cada simulación se sortea una permutación `π` de los símbolos
+  del universo **sin puntos fijos** (ningún símbolo se queda en su sitio; se vuelve a sortear
+  hasta que salga una así). En cada revisión `t`, el filtro `apto` de cada activo `i` es **el
+  suyo** (sin cambios), pero su `clave` para ordenar es la clave verdadera del activo `π(i)` en
+  `t` (`mom` en H5, `−vol` en H7; si es NaN, va el último). `puesto` y `rank` salen de ahí;
+  empates por símbolo. Todo lo demás (stops, tamaños, costes, `top_n`, `keep_n`) es idéntico.
+  Pregunta que contesta: con **la misma rotación** que la candidata, ¿importa que el orden sea
+  el del propio activo?
+- **Criterio 14:** p < 0,02 en Sharpe IS frente a los monos de sorteo mensual **y** frente a los
+  persistentes (1.000 de cada tipo, semilla 42).
+- **Criterio 15:** percentil ≥ 75 frente a los dos tipos.
+- En §5 (desempates por "menor p en el criterio 14") se usa el **mayor** de los dos p de cada
+  candidata.
+- H6 no cambia: su mono no tiene este problema.
+
+**E5 (B7) — sorteo de los monos de H6, definición exacta.** En cada mes `m` se sortea, con
+probabilidad uniforme entre todas las sesiones de `m`, la **sesión de compra** `c` (la misma para
+los 3 activos). La señal es la sesión anterior a `c` en el calendario (de ella salen el ATR y el
+stop, como en la candidata). Se vende en la apertura de la 4.ª sesión posterior a `c` (igual que
+la candidata: compra en la última sesión del mes, vende en la apertura de la 4.ª del siguiente).
+Si `c` es anterior a la sesión de venta del mono del mes previo, se repite el sorteo de ese mes
+(si `c` coincide con ella, vale: las salidas van antes que las entradas). Así cada mono hace,
+como la candidata, una ventana por mes sin solapes. En el último mes del tramo solo se sortea
+entre las sesiones cuya venta cabe en el tramo.
+
+**E6 (A2, A3) — `tom_etf`: mes completo y salida sostenida.** Sustituye a las fórmulas de
+entrada y salida de §2 (H6) y §6.3, y a los resultados esperados de C1–C3:
+- `completo_t` = el calendario `sessions` contiene alguna sesión de un mes **posterior** al de `t`.
+  Si no, no se puede saber cuántas sesiones quedan en el mes de `t`.
+- `entry_t = completo_t & (quedan_t == entry_before_end) & atr.notna()`.
+- `exit_t = (ordinal_t ≥ exit_day) & ~(completo_t & (quedan_t ≤ entry_before_end))`.
+  En palabras: "si lo tienes, véndelo" es verdadero desde la sesión `exit_day` del mes hasta la
+  víspera de la señal de entrada, no un solo día.
+- Con datos completos las operaciones son **las mismas** que con la regla original (la primera
+  señal de venta es la del día `ordinal == exit_day`; las siguientes no encuentran posición).
+  Solo cambia si ese día falta la vela del símbolo o, en paper, el script no se ejecuta: se vende
+  en la siguiente apertura en lugar de esperar un mes.
+- `entry` y `exit` nunca son verdaderos el mismo día.
+- En vivo, el calendario se pide siempre hasta el final del mes **siguiente**. Si `sessions`
+  falta o no contiene todas las fechas de `bars`, la función lanza un error (no deduce el
+  calendario de las propias velas).
+- Casos corregidos (comprobados con un script sobre fechas sintéticas, sin datos de mercado):
+  - **C1:** `entry` solo el 01-30. `exit` el **02-05 y el 02-06**.
+  - **C2:** con `entry_before_end = 2`: `entry` solo el 01-29. Con `exit_day = 2`: `exit` el
+    02-02, el 02-05 y el 02-06.
+  - **C3:** `entry` el 12-30; `exit` el **01-06 y el 01-07**.
+  - C4 no cambia. C5–C9 nuevos en `docs/tareas_sonnet.md` (R2-15).
+
+**E7 (M8) — día de revisión de H5/H7.** "Índice común" (§6.2) = **unión** de los índices de los
+símbolos del universo. Día de revisión = primera fecha de cada mes en esa unión; la primera fecha
+de la unión no es día de revisión. Un símbolo sin vela en el día de revisión no tiene fila: ni
+entra, ni sale, ni ocupa puesto ese mes (si está en cartera, sigue con su stop hasta la revisión
+siguiente). La verificación de datos (R2-3) cuenta cuántas veces pasa en cada universo y Fable
+lo lee antes del primer IS; si pasa en el universo principal, se para y se decide por enmienda.
+
+**E8 (M7) — qué regla de inicio aplica a cada universo.**
+- H5/H7, universo principal: los **9** sectores deben tener ≥ 365 velas al inicio del peldaño. Si
+  no, se retrasa el inicio (regla de §3.1), con enmienda previa.
+- H6, universo principal: basta con que `SPY` cumpla; `IWM` y `EFA` entran escalonados cuando
+  tienen 365 velas, como dice su ficha. Consecuencia declarada: al principio del tramo antiguo
+  H6 opera con uno y luego con dos activos (exposición máxima de un tercio y de dos tercios).
+- Réplicas: entrada escalonada (`EEM`); no se retrasa el inicio.
+
+**E9 (M5) — criterio 17 en los casos raros.** (a) Además de lo escrito, 17, 17-IS y 17d exigen
+CAGR de la estrategia **> 0** en ese tramo. (b) Si la relación de SPY es ≤ 0 y se cumple (a), la
+casilla es "sí". (c) Si la caída máxima de la estrategia es 0 y hay al menos una operación
+cerrada, la relación se toma como infinita. (d) Sin operaciones cerradas en el tramo: "no".
+
+**E10 (M6) — la caja se mide en rentabilidad, no en tipo de descuento.** Si la serie usada
+(`^IRX` o `DTB3`) cotiza como tipo de descuento `d` (en tanto por uno), se convierte antes de
+capitalizar: `y = 365 × d / (360 − 91 × d)`. Sonnet documenta, con la fuente, en qué base viene
+la serie que use. Alternativa válida sin conversión: `DGS3MO` de FRED, si su ficha confirma que
+ya viene como rentabilidad. En caso de duda se aplica la conversión (es la lectura más exigente
+para la candidata).
+
+**E11 (B5) — coste en la ejecución completa.** Cada compra o venta paga el slippage que
+corresponde a **su fecha** (10 pb hasta el 2007-06-30 inclusive, 5 pb desde el 2007-07-01). Una
+operación abierta antes y cerrada después paga 10 pb al entrar y 5 pb al salir. El riesgo por
+unidad al dimensionar usa el coste vigente en la fecha de entrada para los dos lados.
+
+**E12 (B6) — criterios de la cartera combinada de §5.4.** Se ejecuta una vez en el reservado
+antiguo, en el reciente y en la ejecución completa (no en IS ni en réplica). Debe cumplir: 12,
+16b y 17 en cada tramo reservado; 16a; y 4, 16d y 17d en la completa. Además, lo ya escrito
+(relación en la completa mayor que la de la preferida sola). `top_n` y `keep_n` no cambian: con 2
+huecos, entran los dos primeros por `rank` que encuentren hueco.
+
+**E13 (B8) — comprobaciones de datos.** La prohibición de "calcular rentabilidades de los
+símbolos nuevos" se precisa. **Permitido y obligatorio**, sobre todos los símbolos nuevos y sobre
+la historia nueva de los antiguos: (a) lista de fechas con variación de cierre a cierre mayor del
+±20 % (solo fecha, símbolo y si coincide con un split conocido; sirve para detectar splits mal
+ajustados: ver los de `docs/auditoria_ronda2.md` §6); (b) el contraste yfinance ↔ Alpaca del
+tramo común con `scripts/check_alpaca_vs_yf.py`, como en la ronda 1 (compara fuentes entre sí);
+(c) velas ausentes en días de revisión y en días de señal de H6; (d) operabilidad en Alpaca.
+**Sigue prohibido:** cualquier rentabilidad acumulada, media, ranking o gráfico de un símbolo o
+periodo, y cualquier ejecución de las reglas de H5–H7 sobre datos reales.
+
+**Requisito previo del primer IS (recordatorio, no cambia nada):** R2-1 (kill switch al 15 % en
+código y configuración) y R2-3 (datos verificados) hechos, y la auditoría del motor repetida
+sobre el código nuevo.
+
+### Preguntas abiertas para Jorge tras la auditoría (detalle en `docs/auditoria_ronda2.md` §5)
+| # | Decisión | Opción tomada mientras no digas otra cosa | Alternativa |
+|---|---|---|---|
+| **P14** | H6 con el efectivo al 0 % frente a las letras (amplía P7) | Se deja como está; H6 probablemente no llegue a los criterios 2 y 16. | Juzgar el criterio 16 con el efectivo rindiendo como la caja (suaviza). |
+| **P15** | Regla dura 5 cuando venta y compra van a la misma apertura | Se cumple si la exposición tras ejecutarse las órdenes es ≤ 100 %; el ejecutor (paso 5) recorta la compra con un margen del 3 %. | Comprar solo cuando la venta esté ejecutada: obliga a simular la compra una sesión más tarde **desde el primer IS**. |
+| **P16** | Operabilidad en Alpaca de los 24 ETFs | Sin verificar en la auditoría (herramienta sin permiso); lo hace R2-3 antes del IS. | — |

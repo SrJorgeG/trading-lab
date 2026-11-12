@@ -118,3 +118,91 @@ criterios. Sin `git push`.
       solo dejar preparado el modo y un test sintético; no ejecutarlo.
 - [ ] R2-13. `ruff` y `pytest` en verde; informe corto `docs/INFORME_RONDA2_IMPL.md` con dudas de
       interpretación para Fable (como `INFORME_PASO2.md`).
+
+## Ronda 2 — añadidos de la auditoría (2026-11-12, `docs/auditoria_ronda2.md`)
+
+**Antes de empezar R2-1…R2-13:** lee las «Enmiendas» del 2026-11-12 al final de
+`docs/hipotesis_ronda2.md` (E1–E13). Donde choquen con el texto anterior, **manda la enmienda**.
+En concreto: R2-8 se implementa con las fórmulas de E6 (no con las de §6.3), R2-9 incluye el mono
+persistente de E4 y el sorteo de E5, R2-4 aplica E10, R2-5 aplica E11 y R2-3 se amplía con R2-18.
+Las prohibiciones de la sección anterior siguen igual, con la precisión de E13.
+
+- [ ] R2-14. **Casos a mano que faltaban para las señales de panel** (tabla y parámetros de S1:
+      `lookback=2, top_n=2, keep_n=3, atr_mult=3, atr_n=1`):
+  - **S5 (empate):** B cierra a 110 el 02-01 → `mom` de A y de B = 0,10. Con `top_n = 1`:
+    `entry` solo en A (empate → alfabético). Con `top_n = 2`: A y B.
+  - **S6 (menos aptos que huecos):** cierres del 02-01: A 110, B 99, C 98, D 97 → solo A es apto:
+    `entry` solo A; `exit` en B, C y D. Si además A cierra a 99: ningún `entry`, cuatro `exit`.
+  - **S7 (historia insuficiente):** se añade E con solo dos velas (01-31 a 50 y 02-01 a 100). E no
+    es apto ni ocupa puesto: las filas de A–D son las de S1 y `entry(E) = False`.
+  - **S8 (fuga entre símbolos):** multiplicar por 10 todos los precios de B posteriores al 02-01
+    no cambia ninguna fila ≤ 02-01 de **ningún** símbolo. Cortar solo las velas de A en el 02-01
+    no cambia las filas del 02-01 de B, C y D.
+  - **S9 (sin vela el día de revisión, E7):** C no tiene vela el 02-01 → C no tiene fila ese día
+    y todas las suyas son `False`; `entry` = A y B; `exit` = D.
+  - **S10 (simulador, el puesto 4–5 conserva el hueco):** cartera con X, Y, Z (3 huecos). En la
+    revisión, X tiene `entry = exit = False` y un cuarto activo W tiene `entry = True` → W **no**
+    se compra en `t+1` ni ningún otro día de ese mes (no hay cola); X sigue.
+  - **S11 (simulador, rotación en la misma apertura):** en la revisión Z tiene `exit` y W
+    `entry` → en la apertura de `t+1` se vende Z y se compra W; la caja no queda negativa en
+    ningún momento.
+  - **S12 (simulador, señal repetida):** un activo en cartera vuelve a tener `entry = True` con
+    otro `stop_price` → ni la cantidad ni el stop cambian.
+- [ ] R2-15. **Casos a mano que faltaban para `tom_etf`** (fórmulas de E6; `atr_mult=3, atr_n=1`):
+  - **C5 (salida sostenida):** calendario con todas las sesiones del 2024-01-02 al 2024-02-06
+    (enero tiene 21; el 01-15 es festivo). `entry` solo el 01-30. `exit = True` del 01-04 al
+    01-29 inclusive y el 02-05 y 02-06; `False` el 01-02, 01-03, 01-30, 01-31, 02-01 y 02-02.
+  - **C6 (mes incompleto):** calendario de C1 cortado en el 01-31 → `entry = False` en todas las
+    filas (no se puede saber que el 31 es la última sesión).
+  - **C7 (vela ausente):** C1 sin la vela del 02-05 → no hay fila del 02-05 y la del 02-06 tiene
+    `exit = True`.
+  - **C8 (sin calendario):** `params` sin `sessions`, o con un `sessions` al que le falta una
+    fecha de `bars` → `ValueError`.
+  - **C9 (de punta a punta en el simulador):** un activo, 10.000 $, riesgo 1 %, slippage 5 pb,
+    calendario de C1. Velas `(open, high, low, close)`: 01-29 `(100, 100, 100, 100)` ·
+    01-30 `(100, 102, 99, 101)` · 01-31 `(101, 103, 100, 102)` · 02-01 `(102, 104, 101, 103)` ·
+    02-02 `(103, 105, 102, 104)` · 02-05 `(104, 106, 103, 105)` · 02-06 `(106, 107, 105, 106)`.
+    Señal el 01-30 (stop 92). Compra en la apertura del 01-31: precio 101,0505; riesgo por unidad
+    101,0505 − 91,954 = 9,0965 → `floor(100 / 9,0965)` = **10 acciones** (1.010,51 $). Venta en la
+    apertura del 02-06 a 105,947. Resultado: 10 × (105,947 − 101,0505) = **+48,97 $ = +0,538 R**.
+    Una sola operación.
+  - **Retraso de 1 vela:** con el mismo caso, la compra pasa a la apertura del 02-01 (102) y la
+    venta no se mueve.
+- [ ] R2-16. **Tests de los monos** (además del de reproducibilidad):
+  - "Mono con el orden verdadero": si al modo `rank` se le inyecta el orden real, y al modo
+    `window` la sesión de compra real, las operaciones son **idénticas** a las de la candidata.
+  - Si en todas las revisiones hay ≤ 3 aptos, cualquier mono (de los dos tipos) da las mismas
+    operaciones que la candidata.
+  - Mono persistente (E4): la permutación no tiene puntos fijos, es la misma durante toda la
+    simulación y el filtro `apto` no cambia respecto a la candidata.
+  - Modo `window` (E5): una ventana por mes, misma sesión de compra para los 3 activos, venta en
+    la apertura de la 4.ª sesión posterior, sin solapes entre meses.
+- [ ] R2-17. **Tests de métricas, límites y tramos:**
+  - Relación (E9): CAGR 6 % y caída −12 % → 0,5. CAGR −1 % → criterio 17 "no" sea cual sea el
+    resto. Caída 0 con operaciones → infinita. SPY con relación ≤ 0 y estrategia con CAGR > 0 → "sí".
+  - CAGR conjunto (16a): `G_antiguo = 1,5` en 7 años y `G_reciente = 1,2` en 5 años →
+    `1,8^(1/12) − 1` = **5,02 %**.
+  - Caja (E10): tipo de descuento del 5 % → rentabilidad **5,134 %**; serie constante → ese CAGR.
+  - Kill switch: con máximo 10.000 $, equity 8.500,00 **no** salta (la regla dice "más de un
+    15 %") y 8.499,99 sí. Cargar una configuración con `kill_switch_drawdown > 0.15` debe dar
+    error (techo de la regla dura 6).
+  - Guarda de tramos: segunda ejecución del mismo (estrategia, tramo, hash) → error; saltarse el
+    orden → error; el modo `is` se niega si alguna fecha cae fuera del IS.
+  - Coste por fecha (E11): compra el 2007-06-29 y venta el 2007-07-02 en `full` → 10 pb al
+    entrar, 5 pb al salir.
+  - Informativo (hallazgo B4): Monte Carlo de `tom_etf` barajando **meses** (la suma de las
+    operaciones abiertas el mismo día) además del de operaciones sueltas. No es criterio.
+- [ ] R2-18. **Datos (amplía R2-3, enmienda E13):**
+  - Tabla de primera vela por símbolo, comparada con las fechas de `docs/auditoria_ronda2.md` §6
+    (en especial los 8 ETFs de países cuya fecha individual no se pudo confirmar en la web).
+  - Lista de fechas con variación de cierre a cierre mayor del ±20 % (solo fecha y símbolo), y
+    comprobación expresa de que **no** hay salto en: `XLK XLY XLE XLU XLB` el 2025-12-05;
+    `EWJ`, `EWU`, `EWI` el 2016-11-07.
+  - `scripts/check_alpaca_vs_yf.py` sobre los símbolos nuevos (tramo común desde 2016), con las
+    tolerancias de la ronda 1 sin tocar.
+  - Nº de días de revisión (primera sesión del mes) en los que falta la vela de algún sector o
+    país, y nº de días de señal de `tom_etf` en los que falta la de `SPY`, `IWM`, `EFA`, `MDY`,
+    `EEM` o `EWJ`. Solo recuentos y fechas.
+  - `get_asset` de Alpaca para los 24 símbolos: campos `tradable` y `fractionable`. Si un símbolo
+    de réplica no es operable se anota para quitarlo; si no lo es uno principal, **parar y avisar**.
+  - Base de cotización de la serie de caja (descuento o rentabilidad), con la fuente.
