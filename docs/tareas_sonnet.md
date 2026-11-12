@@ -73,12 +73,12 @@ con datos sintéticos o `tests/fixtures/`. Tampoco calcular rentabilidades de lo
 al verificar datos (solo fechas, huecos y duplicados). No cambiar parámetros, universos, fechas ni
 criterios. Sin `git push`.
 
-- [ ] R2-1. **Kill switch al 15 %** (decisión de Jorge, regla dura 6): `config/settings.toml`
+- [x] R2-1. **Kill switch al 15 %** (decisión de Jorge, regla dura 6): `config/settings.toml`
       (`kill_switch_drawdown = 0.15`), valores por defecto en `risk.check_kill_switch`,
       `portfolio_sim.SimConfig`, `robustness.kill_switch_episodes`, `montecarlo.DEFAULT_KILL` y
       `targets.py`; textos de `README.md` y de `prompts/01`, `02` y `05`. Los tests que pasan
       `0.10` como argumento explícito no se tocan. Los informes de la ronda 1 **no** se regeneran.
-- [ ] R2-2. `robustness.calibrate_risk`: el límite sale del TOML de la estrategia
+- [x] R2-2. `robustness.calibrate_risk`: el límite sale del TOML de la estrategia
       (`calibration_dd_limit`, 0.12 en la ronda 2); las candidatas de la ronda 1 conservan 0.10.
 - [ ] R2-3. **Datos:** añadir a `settings.toml` y descargar con yfinance (ajustado) desde
       1998-12-01: `XLB XLE XLF XLI XLK XLP XLU XLV XLY`, `EWJ EWG EWU EWC EWQ EWI EWA EWL EWH`,
@@ -87,32 +87,32 @@ criterios. Sin `git push`.
       nº de velas, huecos y fecha en la que cada símbolo llega a 365 velas. Comprobar con Alpaca
       (`get_asset`) que todos son operables. Aplicar la regla de §3.1 si algo no existe (retrasar
       el inicio / quitar el símbolo de la réplica) y **anotarlo para Fable, no decidirlo**.
-- [ ] R2-4. **Caja:** serie diaria del tipo de las letras a 3 meses (`^IRX` en yfinance, en % anual)
+- [x] R2-4. **Caja:** serie diaria del tipo de las letras a 3 meses (`^IRX` en yfinance, en % anual)
       y benchmark "caja" = capital × ∏(1 + tipo/100)^(1/252). Si `^IRX` no está o tiene huecos
       largos, alternativa: el CSV público `DTB3` de FRED (sin clave). Documentar cuál se usa. Test
       con una serie constante del 5 % → CAGR 5 %.
-- [ ] R2-5. **Tramos múltiples** en el TOML y en `scripts/backtest.py`: `is`, `replica`,
+- [x] R2-5. **Tramos múltiples** en el TOML y en `scripts/backtest.py`: `is`, `replica`,
       `holdout_old` (2000-07-01 → 2007-06-30), `holdout_new` (2021-01-01 → 2026-10-31), `full`
       (2000-07-01 → 2026-10-31), cada uno con su universo y su `slippage_bps` (5 / 15 / 10 / 5 /
       el del tramo que toque en `full`: 10 hasta 2007-06-30 y 5 después). Guarda de un solo uso
       por (estrategia, tramo, hash de parámetros) en `reports/oos_log.csv`, con columnas nuevas
       `tranche`, `costs`, `entry_delay` (cubre la tarea pendiente del paso 3). Orden obligado:
       `replica` → `holdout_old` → `holdout_new` → `full`; el script se niega a saltarse uno.
-- [ ] R2-6. **Señales de panel** (§6.1): tipo `generate_signals_panel`, registro aparte, integración
+- [x] R2-6. **Señales de panel** (§6.1): tipo `generate_signals_panel`, registro aparte, integración
       en `runner` y en los tests de look-ahead. Test: en una misma apertura las salidas liberan
       hueco antes que las entradas.
-- [ ] R2-7. Estrategias `sector_mom` y `sector_lowvol` (§6.2) con los casos S1–S4 como tests; dos
+- [x] R2-7. Estrategias `sector_mom` y `sector_lowvol` (§6.2) con los casos S1–S4 como tests; dos
       TOML con `status = "preregistrada"`.
 - [ ] R2-8. Estrategia `tom_etf` (§6.3): calendario inyectado en `params["sessions"]`, casos C1–C4,
       TOML. Para el modo en vivo, función que construya el calendario con `get_calendar`.
-- [ ] R2-9. **Monos a medida** (§3.4) en `random_benchmark.py`: modo `rank` (sortea el orden de los
+- [x] R2-9. **Monos a medida** (§3.4) en `random_benchmark.py`: modo `rank` (sortea el orden de los
       aptos en cada revisión) y modo `window` (sortea la sesión de entrada de cada mes; salida 4
       sesiones después). Semilla 42, 1.000. Test de reproducibilidad.
-- [ ] R2-10. **Informe:** relación CAGR/|caída| de estrategia, SPY y 60/40; CAGR de caja e `IEF`;
+- [x] R2-10. **Informe:** relación CAGR/|caída| de estrategia, SPY y 60/40; CAGR de caja e `IEF`;
       CAGR conjunto de los dos tramos reservados (fórmula del criterio 16a); criterio 16d sobre el
       trozo de `full` desde 2002-08-01; subperiodos del criterio 11; episodios de kill switch al
       15 %; variante informativa "efectivo rindiendo como la caja"; peor año y peor racha.
-- [ ] R2-11. **Banda para el paper** (§3.6 b): remuestreo por bloques de 21 sesiones, 10.000
+- [x] R2-11. **Banda para el paper** (§3.6 b): remuestreo por bloques de 21 sesiones, 10.000
       trayectorias, semilla 42, percentiles 5/50/95 a 6 y 12 meses. Solo la herramienta y su test.
 - [ ] R2-12. Cartera combinada de §5.4 (sectores con 2 huecos + `tom_etf` con 1 hueco en `SPY`):
       solo dejar preparado el modo y un test sintético; no ejecutarlo.
@@ -133,7 +133,7 @@ y el orden de implementación. Léela antes de escribir código (empieza por §0
 precise algo de esta lista (p. ej. la fórmula de la caja de R2-4, enmienda E14), **manda la
 especificación**.
 
-- [ ] R2-14. **Casos a mano que faltaban para las señales de panel** (tabla y parámetros de S1:
+- [x] R2-14. **Casos a mano que faltaban para las señales de panel** (tabla y parámetros de S1:
       `lookback=2, top_n=2, keep_n=3, atr_mult=3, atr_n=1`):
   - **S5 (empate):** B cierra a 110 el 02-01 → `mom` de A y de B = 0,10. Con `top_n = 1`:
     `entry` solo en A (empate → alfabético). Con `top_n = 2`: A y B.
@@ -174,7 +174,7 @@ especificación**.
     Una sola operación.
   - **Retraso de 1 vela:** con el mismo caso, la compra pasa a la apertura del 02-01 (102) y la
     venta no se mueve.
-- [ ] R2-16. **Tests de los monos** (además del de reproducibilidad):
+- [x] R2-16. **Tests de los monos** (además del de reproducibilidad):
   - "Mono con el orden verdadero": si al modo `rank` se le inyecta el orden real, y al modo
     `window` la sesión de compra real, las operaciones son **idénticas** a las de la candidata.
   - Si en todas las revisiones hay ≤ 3 aptos, cualquier mono (de los dos tipos) da las mismas
@@ -183,7 +183,7 @@ especificación**.
     simulación y el filtro `apto` no cambia respecto a la candidata.
   - Modo `window` (E5): una ventana por mes, misma sesión de compra para los 3 activos, venta en
     la apertura de la 4.ª sesión posterior, sin solapes entre meses.
-- [ ] R2-17. **Tests de métricas, límites y tramos:**
+- [x] R2-17. **Tests de métricas, límites y tramos:**
   - Relación (E9): CAGR 6 % y caída −12 % → 0,5. CAGR −1 % → criterio 17 "no" sea cual sea el
     resto. Caída 0 con operaciones → infinita. SPY con relación ≤ 0 y estrategia con CAGR > 0 → "sí".
   - CAGR conjunto (16a): `G_antiguo = 1,5` en 7 años y `G_reciente = 1,2` en 5 años →
@@ -226,19 +226,19 @@ sin registrar en `SIGNAL_STRATEGIES`.
 **Orden nuevo de requisitos previos del primer IS:** R2-1, R2-2, R2-3 + R2-18, **R2-5 completo y
 probado** (E21), R2-6, R2-7, R2-9 (`rank` + persistente), R2-10, R2-14, R2-16, R2-17, R2-19, R2-13.
 
-- [ ] R2-5 (ampliado, E20/E21): columna `commit` (hash completo de `HEAD`) en `oos_log.csv` y en
+- [x] R2-5 (ampliado, E20/E21): columna `commit` (hash completo de `HEAD`) en `oos_log.csv` y en
       las líneas de IS de `docs/registro_pruebas.md`; abortar si
       `git status --porcelain -- config src scripts` no está vacío (cualquier tramo, IS incluido);
       rechazar cualquier modo distinto de IS sobre estrategias `rechazada` o `aparcada` (también
       `--mode oos`/`full` del runner de la ronda 1); `status = "aparcada"` válido. Tests: árbol
       sucio → error; `donchian_etf` y `donchian_crypto` en `--mode oos` → error.
-- [ ] R2-10 (ampliado, E22): nº de operaciones y exposición media de cada tipo de mono frente a la
+- [x] R2-10 (ampliado, E22): nº de operaciones y exposición media de cada tipo de mono frente a la
       candidata; walk-forward informativo con los parámetros por defecto en las 8 ventanas (no
       decide el criterio 5).
 - [ ] R2-18 (ampliado, E22/M6): por símbolo y año, nº de días con apertura = cierre anterior y con
       apertura fuera de [mínimo, máximo]. Solo recuentos. Si en un sector supera el 5 % de las
       sesiones de `holdout_old`, **parar y avisar**.
-- [ ] R2-19 (nuevo, E22/A1). **Test de potencia sintético**, sin datos reales: series inventadas
+- [x] R2-19 (nuevo, E22/A1). **Test de potencia sintético**, sin datos reales: series inventadas
       de 9 activos donde la fuerza de 6 meses tiene una ventaja conocida (y otra versión sin
       ventaja), pasadas por los criterios de §4 A que se puedan calcular en sintético; frecuencia
       de aprobado en N series (semilla 42). Herramienta + informe `reports/potencia/`. Se ejecuta y
