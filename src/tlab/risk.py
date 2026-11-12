@@ -78,7 +78,7 @@ def apply_limits(
 
 
 def check_kill_switch(
-    equity_history_or_peak: float | Iterable[float], equity_now: float, threshold: float = 0.10
+    equity_history_or_peak: float | Iterable[float], equity_now: float, threshold: float = 0.15
 ) -> bool:
     """True si el equity actual ha caído MÁS de `threshold` desde su máximo."""
     if isinstance(equity_history_or_peak, (int, float)):

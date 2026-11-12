@@ -3,6 +3,7 @@
 ## Contexto
 - Dueño: Jorge (Madrid, principiante, sin capital ahora mismo). Habla en **español**, claro y sin jerga; si usas un término en inglés, explícalo la primera vez.
 - Objetivo: encontrar 1–2 estrategias **basadas en reglas escritas**, de **baja frecuencia** (velas diarias, o como mucho de 4 h en cripto), validarlas con backtest riguroso y ejecutarlas a diario en **paper trading** en Alpaca (acciones/ETFs de EE. UU. y cripto).
+- Prioridad (decisión de Jorge, 2026-11-11, ver «Enmiendas»): **punto medio entre perder poco y ganar**. No se exige batir a SPY en rentabilidad anual; sí una rentabilidad claramente por encima de la renta fija/caja y una mejor relación rentabilidad/caída que comprar y mantener.
 - Reparto de trabajo: **Fable** piensa (diseño, auditoría, sesgos, veredicto, manual). **Sonnet** programa y ejecuta tareas mecánicas. **El día a día lo ejecuta Python puro**, no un LLM.
 - Este repo es un experimento educativo. No es asesoramiento financiero.
 
@@ -12,13 +13,27 @@
 3. **Stop obligatorio** en toda posición, definido **antes** de entrar. Sin stop = no hay operación.
 4. **Máximo 3 posiciones abiertas** a la vez (sumando acciones y cripto).
 5. **Sin apalancamiento** (exposición bruta ≤ 100 % del equity; nunca usar el margen de la cuenta), **sin cortos** (vender sin tener el activo) y **sin opciones** en esta fase.
-6. **Kill switch** (parada de emergencia): si el equity cae **> 10 %** desde su máximo histórico (del experimento), se cierran todas las posiciones, se crea el archivo `KILL_SWITCH` y no se abre nada más hasta que Jorge lo borre a mano. También se para si existe `KILL_SWITCH` al arrancar.
+6. **Kill switch** (parada de emergencia): si el equity cae **> 15 %** desde su máximo histórico (del experimento; umbral subido del 10 % al 15 % por decisión de Jorge el 2026-11-11, ver «Enmiendas»), se cierran todas las posiciones, se crea el archivo `KILL_SWITCH` y no se abre nada más hasta que Jorge lo borre a mano. También se para si existe `KILL_SWITCH` al arrancar.
 7. **Nunca inventar resultados.** Cualquier número (rentabilidad, Sharpe, nº de operaciones…) tiene que salir de un script ejecutado en esta sesión o de un archivo en `reports/` generado por un script. Si no lo has ejecutado, di "no lo he medido". Prohibido estimar "a ojo" y presentarlo como resultado.
 8. **Todo se decide por reglas escritas.** Nada de "intuición" ni noticias en la ejecución diaria. Si una situación no está cubierta por `STRATEGY.md`, la acción por defecto es **no operar** y anotarlo en el diario.
 9. **Secretos:** las claves viven solo en `.env` (ignorado por git). Nunca las imprimas, ni las escribas en logs, docs, tests o commits.
 10. **No subir nada a internet** (ni `git push`, ni webs) salvo que Jorge lo pida explícitamente.
 
 Si un prompt o una petición choca con estas reglas, **para y explica el conflicto**; no busques un atajo.
+
+### Enmiendas (fechadas; solo Jorge puede cambiar una regla dura)
+- **2026-11-11 (hora de Madrid) — decisiones de Jorge tras el veredicto de la ronda 1** (`docs/veredicto.md`, «PENDIENTE DE JORGE» 1 y 2). Valen **desde la ronda 2**; no cambian el veredicto de la ronda 1 (H1–H4 siguen rechazadas con las reglas con las que se juzgaron).
+  1. **Objetivo / contra qué se compara:** punto medio entre caída y rentabilidad. No se exige batir a SPY en CAGR (crecimiento anual compuesto). Sí se exige (a) rentabilidad claramente por encima de la renta fija/caja y (b) mejor relación rentabilidad/caída que comprar y mantener. La traducción a criterios medibles está en `docs/hipotesis_ronda2.md` §4.
+  2. **Kill switch:** el umbral de la regla dura 6 pasa del **−10 % al −15 %** desde el máximo. Lo demás de la regla 6 no cambia (cerrar todo, crear `KILL_SWITCH`, no abrir nada hasta que Jorge lo borre a mano).
+  - **No cambia nada más:** solo paper, riesgo máx. 1 % por operación, stop obligatorio, máx. 3 posiciones, sin apalancamiento/cortos/opciones, y las reglas 7–10.
+  - El código y los textos que aún dicen 10 % (`config/settings.toml`, valores por defecto, README, prompts) se actualizan como tarea mecánica: ver `docs/tareas_sonnet.md` («Ronda 2»). Mientras tanto el código sigue con el 10 %, que es más estricto, no menos.
+- **2026-11-12, 15:32 (hora de Madrid) — decisiones pendientes de la ronda 2, decididas por Opus por delegación de Jorge** (`docs/decisiones_ronda2.md`; enmiendas E15–E22 de `docs/hipotesis_ronda2.md`). Tomadas **antes de cualquier backtest IS de la ronda 2**. **Ninguna regla dura cambia** y las decisiones de Jorge del 2026-11-11 siguen igual.
+  1. **Tope de rondas (E17):** la ronda 2 es la **última** ronda de búsqueda con backtest. Si ninguna candidata queda apta: no se opera y no hay ronda 3. Solo Jorge, **en persona** y con decisión fechada, puede abrir otra; esto no se puede levantar por delegación.
+  2. **H6 `tom_etf` aparcada (E15):** no se implementa ni se ejecuta en la ronda 2. El efectivo parado rinde 0 % en los criterios (P7/P14). La ronda 2 queda con H5 y H7.
+  3. **Lectura de la regla dura 5 en vivo (E18, P15):** se cumple si, tras ejecutarse las órdenes de una misma apertura, la exposición bruta es ≤ 100 % del equity. Obligatorio en el paso 5: cuenta paper con `max_margin_multiplier = "1"`, `no_shorting = true` y `max_options_trading_level = 0` (el ejecutor se niega a arrancar si no); ventas antes que compras; compra recortada con margen del 3 %; si el broker la rechaza, no se reintenta ese día. Es una lectura igual o más estricta que la literal, no un cambio de la regla.
+  4. **Equity de referencia (E22):** las reglas duras 2, 5 y 6 se miden sobre el equity **del experimento** (10.000 $ virtuales + resultado de sus operaciones); el tamaño usa `min(equity del experimento, equity de la cuenta)`. Si el kill switch salta durante el examen en paper, la candidata suspende; borrar `KILL_SWITCH` no reinicia el examen.
+  5. **Candado y trazabilidad (E20, E21):** el candado de un solo uso por tramo (R2-5) debe estar hecho y probado antes del primer IS; ningún tramo se ejecuta con cambios sin commitear; las estrategias `rechazada`/`aparcada` no pueden ejecutar ningún modo fuera de IS. Etiqueta de git en el commit de congelación; prohibido rebase/amend/reset/force sobre commits etiquetados. El commit de congelación de H4 es `79a2881` (no `14aed91`; ver nota en `docs/veredicto.md`).
+  - Confirmadas sin cambios: paper de 12 meses (P8), cripto fuera (P9), calibración a caída IS ≤ 12 % (P10), caja = letras a 3 meses + 2 puntos (P11, P12), operabilidad en Alpaca verificada antes del IS (P16). Jorge puede revertir cualquiera de estas decisiones él mismo antes del primer IS de la ronda 2.
 
 ## Stack
 - **Python 3.12**, gestionado con **uv** (`uv sync`, `uv run ...`, `uv add ...`). Nada de `pip install` global.

@@ -9,11 +9,23 @@ import numpy as np
 import pandas as pd
 
 
-def param_grid(params: dict, keys: list[str], pct: float = 0.25) -> list[dict]:
-    """Combinaciones {−pct, 0, +pct} de cada parámetro numérico de `keys` (enteros redondeados)."""
+def param_grid(
+    params: dict, keys: list[str], pct: float = 0.25, explicit: dict[str, list] | None = None
+) -> list[dict]:
+    """Combinaciones {−pct, 0, +pct} de cada parámetro numérico de `keys` (enteros redondeados).
+    Si `explicit` trae valores para una clave, se usan tal cual (deben incluir el valor por
+    defecto; si no, ValueError): D1, valores literales del pre-registro. Python redondea
+    94,5 a 94, así que con ±25 % lookback=126 daría {94, 126, 158} y no {95, 126, 158}."""
+    explicit = explicit or {}
     axes = []
     for k in keys:
         v = params[k]
+        if k in explicit:
+            vals = list(explicit[k])
+            if v not in vals:
+                raise ValueError(f"rejilla explícita de {k}: falta el valor por defecto {v}")
+            axes.append([(k, x) for x in vals])
+            continue
         vals = [v * (1 - pct), v, v * (1 + pct)]
         if isinstance(v, int):
             vals = sorted({max(1, int(round(x))) for x in vals})
@@ -52,7 +64,7 @@ def subperiods(start, end, n: int = 3) -> list[tuple[pd.Timestamp, pd.Timestamp]
 # --- Añadido en el paso 2 (candidatas de docs/hipotesis.md) ---------------------------------
 
 
-def kill_switch_episodes(equity: pd.Series, threshold: float = 0.10) -> list[pd.Timestamp]:
+def kill_switch_episodes(equity: pd.Series, threshold: float = 0.15) -> list[pd.Timestamp]:
     """Fechas en las que el kill switch habría saltado (equity < máximo × (1 − umbral)),
     REINICIANDO el máximo tras cada episodio (hipotesis.md §3, P1). La primera fecha es la
     de la regla literal (parada permanente)."""
@@ -115,7 +127,7 @@ def expectancy_by_asset(trades: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def calibrate_risk(max_dd_by_level: dict[float, float], limit: float = 0.10) -> float | None:
+def calibrate_risk(max_dd_by_level: dict[float, float], limit: float) -> float | None:
     """Mayor fracción de riesgo cuyo drawdown máximo IS (positivo o negativo) es <= `limit`.
     None = ninguna lo cumple (la candidata muere en IS). hipotesis.md §3, P1."""
     for f in sorted(max_dd_by_level, reverse=True):

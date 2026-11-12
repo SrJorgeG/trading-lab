@@ -338,3 +338,21 @@ Ningún criterio de §4 cambia. Son aclaraciones de procedimiento a las dudas de
 10. **Criterio 10 (Monte Carlo):** se evalúa sobre las operaciones del IS antes del OOS (filtro) y, si la candidata llega al final, también sobre las del periodo completo; deben cumplirse las dos.
 11. **Contraste yfinance ↔ Alpaca:** las tolerancias **no se tocan** y el resultado formal sigue siendo REVISAR en 7 ETFs. Verificado en `reports/datos/verificacion_fable_20261111.md`: las diferencias son días sueltos (sobre todo marzo de 2020, cierres distintos entre proveedores que en buena parte se deshacen al día siguiente), no una deriva del ajuste; quitando los 5 peores días la correlación es ≥ 0,9995 en todos, y las señales de las tres candidatas de ETFs coinciden casi por completo entre fuentes en el tramo IS común. Decisión: **no bloquea**; la fuente sigue siendo yfinance. Queda como riesgo de divergencia backtest ↔ paper.
 12. **Corte rápido (prompt 03, fase B.1):** si en IS la expectancy con costes es ≤ 0, la candidata se descarta sin más pruebas. Es un filtro añadido (endurece).
+
+### 2026-11-11 (hora de Madrid) — decisiones de Jorge DESPUÉS del veredicto de la ronda 1 (valen para la ronda 2)
+La ronda 1 está **cerrada**: H1–H4 quedan rechazadas con los criterios de este documento, que
+**no se tocan** (`docs/veredicto.md`). Lo que sigue no reabre nada de la ronda 1; se anota aquí
+porque responde a los «PENDIENTE DE JORGE» que este pre-registro dejó abiertos, y rige el
+pre-registro nuevo (`docs/hipotesis_ronda2.md`).
+
+13. **Objetivo y benchmark (PENDIENTE 1 del veredicto):** prioridad = **punto medio entre caída y
+    rentabilidad**. En la ronda 2 no se exige batir a SPY en CAGR; sí (a) rentabilidad claramente
+    por encima de la renta fija/caja y (b) mejor relación rentabilidad/caída que comprar y
+    mantener. Sustituye, solo para rondas nuevas, a la parte «(a) o (b)» del criterio 3 de §4.
+14. **P1 — kill switch (PENDIENTE 2 del veredicto):** el umbral de la regla dura 6 pasa del
+    **−10 % al −15 %** (`CLAUDE.md`, «Enmiendas»). Sigue siendo una parada permanente hasta que
+    Jorge borre `KILL_SWITCH` a mano.
+15. **Lo que no cambia:** solo paper, riesgo máx. 1 % por operación, stop obligatorio, máx. 3
+    posiciones, sin apalancamiento/cortos/opciones. P2–P6 siguen como estaban.
+16. **Prohibido reutilizar estas decisiones para rescatar a H1–H4:** volver a juzgarlas con el
+    criterio nuevo, o con retoques, sobre datos ya vistos sería sobreajuste. No se hace.

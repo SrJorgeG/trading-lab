@@ -37,7 +37,7 @@ Orden exacto (igual que el checklist de `STRATEGY.md`):
 4. Comprobar calendario/reloj de Alpaca: ¿día hábil? ¿estamos en la ventana de esta sesión? Si no → salir sin operar (y anotarlo).
 5. **Sincronizar con el broker** (la verdad es el broker): posiciones, órdenes abiertas, equity. Comparar con `state/positions.json`. Si hay discrepancias → **no abrir nada nuevo**, anotar "DESCUADRE" y seguir solo con salidas/stops.
 6. **Equity del experimento** = `virtual_equity_usd` (10.000 $) + P&L realizado y no realizado de nuestras operaciones desde el inicio (guardado en `state/`). Se usa para el sizing y el kill switch, aunque la cuenta paper tenga 100.000 $. Actualizar el máximo en `state/peak.json`.
-7. **Kill switch:** si el drawdown del experimento > 10 % → cerrar todas las posiciones, cancelar órdenes, crear `KILL_SWITCH`, anotar y salir (código 2).
+7. **Kill switch:** si el drawdown del experimento > 15 % → cerrar todas las posiciones, cancelar órdenes, crear `KILL_SWITCH`, anotar y salir (código 2).
 8. Datos: cargar velas (caché + actualización) y validar. Datos insuficientes → `SKIP` para ese símbolo.
 9. Señales (`signals.py`) → plan de órdenes: **primero salidas**, luego stops, luego entradas por `rank`; respetar máx. 3 posiciones, 1 % de riesgo, exposición ≤ 100 %, caja disponible; cantidad 0 → `SKIP`.
    - **Ojo con las órdenes que reservan acciones:** Alpaca bloquea la cantidad de una posición que ya tiene una orden de venta abierta (el stop `gtc`). Antes de enviar una salida por señal, **cancela primero el stop** de esa posición y confirma la cancelación; si después la salida no se ejecuta, `post-open` debe volver a poner el stop. Lo mismo al mover un stop (usa `replace_order` o cancelar + crear) y en cripto antes de una venta por software.
@@ -59,7 +59,7 @@ Envoltorio fino sobre `alpaca-py` (órdenes `opg`/`day`/`gtc`, stops, cancelar, 
 | `test_dry_run_sends_nothing` | En `--dry-run` el broker falso no recibe ninguna orden, pero el diario se escribe. |
 | `test_idempotent_rerun` | Ejecutar dos veces la misma sesión no duplica órdenes. |
 | `test_opg_window` | Fuera de la ventana `pre-open` no se envían entradas. |
-| `test_kill_switch_runner` | Drawdown > 10 % → cierra todo, crea `KILL_SWITCH`; con `KILL_SWITCH` presente no opera. |
+| `test_kill_switch_runner` | Drawdown > 15 % → cierra todo, crea `KILL_SWITCH`; con `KILL_SWITCH` presente no opera. |
 | `test_reconcile_mismatch` | Descuadre broker/estado → no hay entradas nuevas, código 4. |
 | `test_exit_cancels_stop_first` | Una salida por señal cancela antes el stop de esa posición; si la salida no se ejecuta, `post-open` repone el stop. |
 | `test_every_position_has_stop` | Tras `post-open`, toda posición tiene stop o se ha cerrado. |

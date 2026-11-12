@@ -132,6 +132,13 @@ Riesgo calibrado: **0,5 %** (DD IS −16,4 % / −13,5 % / −9,9 %; H3-IS).
 ### H4 `donchian_etf` — RECHAZADA (falla en OOS; OOS gastado)
 
 Riesgo calibrado: **0,5 %** (DD IS −12,7 % / −11,6 % / −9,4 %; H4-IS). Parámetros congelados en el commit `14aed91` antes de ejecutar el OOS.
+> **Nota de trazabilidad (2026-11-12, 15:32, Opus por delegación de Jorge; enmienda E20 de
+> `docs/hipotesis_ronda2.md`):** `14aed91` quedó fuera de todas las ramas tras un rebase. Su
+> equivalente en la rama es **`79a2881`** (mismo mensaje y hora, mismo cambio en
+> `config/strategies/donchian_etf.toml`; solo difieren `scripts/diag_alpaca_vs_yf.py`,
+> `src/tlab/data/crosscheck.py` y `tests/test_crosscheck.py`, comprobado con `git diff`).
+> Etiquetas locales: `ronda1/congelacion-h4` → `79a2881` y `ronda1/congelacion-h4-original` →
+> `14aed91`. El veredicto no cambia.
 
 | Criterio | Umbral | Resultado | ✔/✘ | Informe |
 |---|---|---|---|---|

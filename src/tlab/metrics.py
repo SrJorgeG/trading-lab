@@ -117,3 +117,78 @@ def summary(
     if trades is not None:
         out.update(trade_stats(trades))
     return out
+
+
+# --- Ronda 2 (R2-10): métricas nuevas, funciones puras ----------------------------------------
+
+
+def return_dd_ratio(cagr_value: float, max_dd: float, n_trades: int | None = None) -> float:
+    """CAGR / |caída máxima|. Caída 0: +inf si ``n_trades`` es None o > 0 y el CAGR es > 0;
+    en otro caso NaN."""
+    if max_dd == 0:
+        if (n_trades is None or n_trades > 0) and cagr_value > 0:
+            return float("inf")
+        return float("nan")
+    if not np.isfinite(max_dd):
+        return float("nan")
+    return float(cagr_value / abs(max_dd))
+
+
+def joint_cagr(g_old: float, years_old: float, g_new: float, years_new: float) -> float:
+    """(g_old · g_new) ** (1 / (años_old + años_new)) − 1. Criterio 16a."""
+    return float((g_old * g_new) ** (1.0 / (years_old + years_new)) - 1.0)
+
+
+def worst_calendar_year(eq: pd.Series) -> tuple[int, float]:
+    """(año, rentabilidad) del peor año natural: último valor del año / último valor del año
+    anterior − 1 (el primer año, contra el primer valor de la serie)."""
+    last = eq.groupby(eq.index.year).last()
+    prev = last.shift(1)
+    prev.iloc[0] = float(eq.iloc[0])
+    ret = last / prev - 1.0
+    year = int(ret.idxmin())
+    return year, float(ret.loc[year])
+
+
+def losing_streaks(trades: pd.DataFrame) -> dict:
+    """Rachas de operaciones perdedoras seguidas, ordenadas por (exit_date, entry_date, symbol).
+    ``longest_n``: más pérdidas seguidas; ``longest_usd``: su suma (a igual longitud, la peor);
+    ``deepest_usd``: la racha con peor suma. pnl == 0 corta la racha."""
+    empty = {"longest_n": 0, "longest_usd": 0.0, "deepest_usd": 0.0}
+    if len(trades) == 0:
+        return empty
+    cols = [c for c in ("exit_date", "entry_date", "symbol") if c in trades.columns]
+    ordered = trades.sort_values(cols, kind="stable") if cols else trades
+    streaks: list[tuple[int, float]] = []
+    n, s = 0, 0.0
+    for p in ordered["pnl_usd"].to_numpy(float):
+        if p < 0:
+            n, s = n + 1, s + p
+        else:
+            if n:
+                streaks.append((n, s))
+            n, s = 0, 0.0
+    if n:
+        streaks.append((n, s))
+    if not streaks:
+        return empty
+    longest = max(streaks, key=lambda x: (x[0], -x[1]))
+    return {
+        "longest_n": longest[0],
+        "longest_usd": float(longest[1]),
+        "deepest_usd": float(min(x[1] for x in streaks)),
+    }
+
+
+def cash_adjusted_equity(eq: pd.Series, exposure: pd.Series, cash_eq: pd.Series) -> pd.Series:
+    """Informativo (D13): efectivo parado rindiendo como la caja.
+    adj[0] = eq[0];
+    adj[t] = adj[t-1] · (eq[t]/eq[t-1] + (1 - exposure[t-1]) · (cash[t]/cash[t-1] - 1))."""
+    e = eq.to_numpy(float)
+    x = exposure.reindex(eq.index).to_numpy(float)
+    c = cash_eq.reindex(eq.index).to_numpy(float)
+    out = np.empty(len(e))
+    out[0] = e[0]
+    for t in range(1, len(e)):
+        out[t] = out[t - 1] * (e[t] / e[t - 1] + (1.0 - x[t - 1]) * (c[t] / c[t - 1] - 1.0))
+    return pd.Series(out, index=eq.index)

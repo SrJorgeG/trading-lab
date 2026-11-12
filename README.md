@@ -166,7 +166,7 @@ Cambiar de modelo dentro de Claude Code: `/model` y eliges. Desde la terminal: `
 - Solo **paper**. Nunca el endpoint real. Nunca claves reales.
 - Riesgo máx. **1 %** por operación, stop obligatorio, máx. **3** posiciones abiertas.
 - Sin apalancamiento, sin cortos (vender sin tener el activo) y sin opciones.
-- **Kill switch** (parada de emergencia) si la cuenta cae más de un **10 %** desde su máximo.
+- **Kill switch** (parada de emergencia) si la cuenta cae más de un **15 %** desde su máximo.
 - **Nunca inventar resultados.** Si un número no sale de un script que se ha ejecutado, no existe.
 
 Ni yo ni Claude somos asesores financieros. Esto es para aprender.

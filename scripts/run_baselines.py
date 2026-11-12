@@ -273,7 +273,7 @@ CAGR / Sharpe costes×2 |
    Están simuladas con `allocation_sim` (pesos objetivo, ejecución a la apertura del primer día
    del mes siguiente, fracciones de participación, efectivo al 0 %). Para operarlas con las
    reglas del kit Fable tiene que decidir cómo encajarlas (ver `docs/PREP_NOTES.md`).
-3. **Kill switch permanente**: con la regla literal (−10 % desde máximo → se para para siempre),
+3. **Kill switch permanente**: con la regla literal (−15 % desde máximo → se para para siempre),
    un backtest de 20 años muere en el primer bache y el resto del periodo queda en efectivo.
    Por eso se muestra también la variante sin kill switch, solo como información.
 4. Periodo con sesgo: 2005-2026 incluye un mercado alcista muy largo en EE. UU.; BTC solo desde

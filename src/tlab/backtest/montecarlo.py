@@ -29,7 +29,7 @@ BANDS = (5, 25, 50, 75, 95)
 DEFAULT_N = 5_000
 DEFAULT_SEED = 42
 DEFAULT_BLOCK = 21
-DEFAULT_KILL = 0.10
+DEFAULT_KILL = 0.15
 DEFAULT_RUIN = 0.20
 
 Method = Literal["shuffle", "bootstrap", "block"]

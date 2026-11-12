@@ -1,0 +1,77 @@
+# H7 — CANDIDATA PRE-REGISTRADA (docs/hipotesis_ronda2.md §2 y §6.2, enmiendas E1–E22).
+# No cambiar sin re-registrar. `frozen = false` hasta el commit de congelación (E2, lo pone Fable).
+# Comparte esqueleto con H5 (sector_mom): solo cambia `rank_by`. No pueden ir juntas (§5).
+id = "sector_lowvol"
+kind = "panel"
+status = "preregistrada"
+frozen = false
+universe = ["XLB", "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY"]
+replica_universe = ["EWJ", "EWG", "EWU", "EWC", "EWQ", "EWI", "EWA", "EWL", "EWH"]
+benchmark = "SPY"
+benchmark_info = { SPY = 0.6, IEF = 0.4 }   # 60/40 con rebalanceo mensual (informativo)
+fixed_income = "IEF"                        # criterio 16d
+fixed_income_from = "2002-08-01"
+robust_keys = ["lookback", "atr_mult", "keep_n"]
+start = "2007-07-01"                        # = tramo is (compatibilidad con la ronda 1)
+is_end = "2020-12-31"
+end = "2026-10-31"
+data_source = "yfinance"
+history_start = "1993-01-01"
+min_history_bars = 365                      # cada activo entra al universo con >= 365 velas
+require_full_universe = true                # D10: si falta alguno al inicio del tramo, se para
+risk_per_trade = 0.01                       # PROVISIONAL hasta la calibración IS
+risk_levels = [0.01, 0.0075, 0.005]
+calibration_dd_limit = 0.12                 # P10: caída máxima IS <= 12 %
+kill_switch_in_backtest = false             # el kill switch se cuenta aparte (episodios al 15 %)
+cash_margin = 0.02                          # criterios 16-IS, 16a, 16d (P12)
+monkey_p_max = 0.02                         # criterio 14
+subperiods = [["2000-07-01", "2007-06-30"], ["2007-07-01", "2013-12-31"], ["2014-01-01", "2020-06-30"], ["2020-07-01", "2026-10-31"]]
+
+[robust_grid]                               # D1: valores literales de hipotesis_ronda2.md §2
+lookback = [95, 126, 158]
+atr_mult = [2.25, 3.0, 3.75]
+keep_n = [4, 5, 6]
+
+[walkforward]
+first_test = "2013-01-01"
+test_months = 12
+n_windows = 8
+min_valid_windows = 5
+
+[tranches.is]
+start = "2007-07-01"
+end = "2020-12-31"
+universe = "universe"
+slippage_bps = 5
+
+[tranches.replica]
+start = "2000-07-01"
+end = "2026-10-31"
+universe = "replica_universe"
+slippage_bps = 15
+
+[tranches.holdout_old]
+start = "2000-07-01"
+end = "2007-06-30"
+universe = "universe"
+slippage_bps = 10
+
+[tranches.holdout_new]
+start = "2021-01-01"
+end = "2026-10-31"
+universe = "universe"
+slippage_bps = 5
+
+[tranches.full]
+start = "2000-07-01"
+end = "2026-10-31"
+universe = "universe"
+slippage_schedule = [["2000-07-01", 10], ["2007-07-01", 5]]   # E11
+
+[params]
+rank_by = "lowvol"
+lookback = 126
+top_n = 3
+keep_n = 5
+atr_mult = 3.0
+atr_n = 20

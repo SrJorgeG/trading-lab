@@ -24,7 +24,7 @@ import pandas as pd
 
 from tlab.backtest.overfit import deflated_sharpe, pbo_cscv, sharpe_per_period
 from tlab.backtest.targets import METRICS, SCORABLE, Target, check_period, extract_metrics
-from tlab.config import ROOT
+from tlab.config import ROOT, load_settings
 
 CACHE_VERSION = 2
 DEFAULT_TOL = 0.20  # "casi igual" = dentro del 20 % del mejor
@@ -489,7 +489,8 @@ def warnings_for(sw: SweepResult, metric: str, rob: dict, ov: dict) -> list[str]
         )
     elif not sw.target.kill_switch:
         w.append(
-            "Barrido SIN kill switch (como en las baselines). Con la regla del 10 % activada los "
+            "Barrido SIN kill switch (como en las baselines). Con la regla del "
+            f"{load_settings()['risk']['kill_switch_drawdown']:.0%} activada los "
             "números cambian mucho; repite con kill switch antes de cualquier veredicto."
         )
     return w

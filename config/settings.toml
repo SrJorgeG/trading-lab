@@ -7,7 +7,7 @@ virtual_equity_usd = 10000      # capital con el que razonamos aunque la cuenta 
 risk_per_trade = 0.01
 max_positions = 3
 max_gross_exposure = 1.0        # sin apalancamiento
-kill_switch_drawdown = 0.10
+kill_switch_drawdown = 0.15     # regla dura 6, subida del 10 % al 15 % por Jorge (2026-11-11)
 max_position_fraction = 0.3333  # tope por posición: coste <= equity/3 (hipotesis.md §2)
 
 [costs.equity]
@@ -27,6 +27,12 @@ history_start = "2003-01-01"    # inicio con yfinance (respaldo, más historia)
 cache_dir = "data_cache"
 source = "auto"                 # auto = Alpaca si hay claves en .env; si no, yfinance
 
+[data.round2]
+# Solo la ronda 2. `[data] history_start` NO se toca: lo usan las baselines y la ronda 1.
+history_start = "1993-01-01"    # yfinance devuelve desde la primera vela de cada símbolo
+cash_symbol = "^IRX"            # letras a 3 meses, % anual
+cash_fallback = "DTB3"          # CSV público de FRED (sin clave)
+
 [validation]
 is_fraction = 0.70              # provisional hasta que docs/hipotesis.md fije fechas
 wf_windows = 5
@@ -34,5 +40,7 @@ wf_windows = 5
 [universe]
 equity = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "GLD", "BIL", "SHY",
           "XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "XLV", "XLY",
-          "DBC", "VNQ", "DIA"]
+          "DBC", "VNQ", "DIA",
+          # ronda 2 (H5/H7, universo de réplica): ETFs de países. MDY queda fuera (H6 aparcada, E15).
+          "EWJ", "EWG", "EWU", "EWC", "EWQ", "EWI", "EWA", "EWL", "EWH"]
 crypto = ["BTC/USD", "ETH/USD", "LTC/USD", "BCH/USD"]

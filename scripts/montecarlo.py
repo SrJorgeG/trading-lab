@@ -205,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         "--block", type=int, default=DEFAULT_BLOCK, help="longitud de bloque (método block)"
     )
     ap.add_argument(
-        "--kill", type=float, default=DEFAULT_KILL, help="kill switch (fracción, 0.10 = 10 %)"
+        "--kill", type=float, default=DEFAULT_KILL, help="kill switch (fracción, 0.15 = 15 %)"
     )
     ap.add_argument(
         "--ruin", type=float, default=DEFAULT_RUIN, help="umbral de ruina desde el inicio"
